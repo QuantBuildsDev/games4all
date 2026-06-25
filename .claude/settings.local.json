@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(firebase login:list 2>&1)",
+      "PowerShell(firebase use games4all-9237d 2>&1)",
+      "PowerShell(firebase deploy --only firestore:rules 2>&1)",
+      "Bash(node -e \"try{require.resolve\\('puppeteer'\\);console.log\\('puppeteer yes'\\)}catch\\(e\\){console.log\\('no puppeteer'\\)}; try{require.resolve\\('playwright'\\);console.log\\('playwright yes'\\)}catch\\(e\\){console.log\\('no playwright'\\)}\")",
+      "Bash(npx --no-install playwright --version)",
+      "Bash(node --check games/2048/game.js)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:5500__TRACKED_VAR__)",
+      "Bash(node --check games/snake/game.js)",
+      "Bash(node --check games/age-of-war/game.js)",
+      "WebFetch(domain:kenney.nl)",
+      "PowerShell($zip = \"$env:TEMP\\\\kenney_racing.zip\"; $out = \"$env:TEMP\\\\kenney_racing\"; if \\(Test-Path $out\\) { Remove-Item -Recurse -Force $out }; Expand-Archive -Path $zip -DestinationPath $out -Force; Get-ChildItem -Recurse $out -Directory | Select-Object FullName)",
+      "PowerShell($out = \"$env:TEMP\\\\kenney_racing\"; Write-Output \"=== CARS ===\"; Get-ChildItem \"$out\\\\PNG\\\\Cars\" | Select-Object -ExpandProperty Name; Write-Output \"=== OBJECTS ===\"; Get-ChildItem \"$out\\\\PNG\\\\Objects\" | Select-Object -ExpandProperty Name; Write-Output \"=== ASPHALT TILES ===\"; Get-ChildItem \"$out\\\\PNG\\\\Tiles\\\\Asphalt road\" | Select-Object -ExpandProperty Name)",
+      "PowerShell($out = \"$env:TEMP\\\\kenney_racing\"; Add-Type -AssemblyName System.Drawing; function dim\\($p\\){ $i=[System.Drawing.Image]::FromFile\\($p\\); \"$\\([System.IO.Path]::GetFileName\\($p\\)\\): $\\($i.Width\\)x$\\($i.Height\\)\"; $i.Dispose\\(\\) }; dim \"$out\\\\PNG\\\\Cars\\\\car_red_1.png\"; dim \"$out\\\\PNG\\\\Cars\\\\car_blue_1.png\"; dim \"$out\\\\PNG\\\\Tiles\\\\Grass\\\\land_grass04.png\" 2>$null; Get-ChildItem \"$out\\\\PNG\\\\Tiles\\\\Grass\" | Select-Object -First 8 -ExpandProperty Name; Write-Output \"--- objects sizes ---\"; dim \"$out\\\\PNG\\\\Objects\\\\cone_straight.png\"; dim \"$out\\\\PNG\\\\Objects\\\\barrel_red.png\"; dim \"$out\\\\PNG\\\\Objects\\\\oil.png\"; dim \"$out\\\\PNG\\\\Objects\\\\tree_small.png\")",
+      "Bash(node --check games/racing/game.js)",
+      "Bash(node _verify_levels.mjs)",
+      "Bash(node --check games/parking/game.js)",
+      "Bash(node _gen.mjs)",
+      "Bash(node _check.mjs)",
+      "Bash(node --check game.js)",
+      "Bash(firebase deploy *)"
+    ]
+  }
+}

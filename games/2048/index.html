@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>2048 — Games4All</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/games/2048/style.css" />
+</head>
+<body>
+  <!-- Top bar -->
+  <header class="game-header">
+    <a class="back-link" href="/index.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      <span>All games</span>
+    </a>
+    <div class="game-title"><span class="brand-text">Games<span class="brand-accent">4</span>All</span></div>
+    <div class="auth-status">
+      <span class="auth-hint" id="authHint">Not signed in — scores won't save</span>
+      <div class="auth-user" id="authUser" hidden>
+        <img class="auth-avatar" id="authAvatar" alt="" referrerpolicy="no-referrer" />
+        <span class="auth-name" id="authName"></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="stage">
+    <!-- Score bar -->
+    <div class="scorebar">
+      <div class="title-block">
+        <h1 class="game-name">2048</h1>
+        <p class="game-tagline">Join the tiles, reach <strong>2048</strong>!</p>
+      </div>
+      <div class="scores">
+        <div class="score-pill">
+          <span class="score-cap">Score</span>
+          <strong class="score-num" id="scoreVal">0</strong>
+        </div>
+        <div class="score-pill">
+          <span class="score-cap">Best</span>
+          <strong class="score-num" id="bestVal">0</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Board -->
+    <div class="board-wrap" id="boardWrap">
+      <div id="game"></div>
+
+      <!-- Win overlay -->
+      <div class="overlay overlay-win" id="winScreen" hidden>
+        <div class="overlay-inner">
+          <h2 class="overlay-title win">You win! 🎉</h2>
+          <p class="overlay-sub">You reached <strong>2048</strong>. Keep going for a higher score?</p>
+          <div class="overlay-actions">
+            <button class="btn-cta" id="keepGoingBtn">Keep going</button>
+            <button class="btn-ghost" id="winNewBtn">New game</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game over overlay -->
+      <div class="overlay" id="overScreen" hidden>
+        <div class="overlay-inner">
+          <h2 class="overlay-title">Game over</h2>
+          <p class="overlay-sub">No more moves.</p>
+          <div class="final-score">
+            <span>Score</span><strong id="finalScore">0</strong>
+          </div>
+          <div class="save-note" id="saveNote"></div>
+          <div class="overlay-actions">
+            <button class="btn-cta" id="overNewBtn">Try again</button>
+            <a class="ghost-link" href="/index.html">All games</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="newgame-btn" id="newGameBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+        New game
+      </button>
+      <p class="controls-hint">Arrow keys / WASD · swipe on mobile</p>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+  <script type="module" src="/games/2048/game.js"></script>
+</body>
+</html>

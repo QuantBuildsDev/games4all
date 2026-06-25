@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Flappy Bird — Games4All</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/games/flappy-bird/style.css" />
+</head>
+<body>
+  <!-- Top bar -->
+  <header class="game-header">
+    <a class="back-link" href="/index.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      <span>All games</span>
+    </a>
+
+    <div class="game-title">
+      <span class="brand-text">Games<span class="brand-accent">4</span>All</span>
+    </div>
+
+    <div class="auth-status" id="authStatus">
+      <!-- filled by JS: either a sign-in hint or the user's avatar -->
+      <span class="auth-hint" id="authHint">Not signed in — scores won't save</span>
+      <div class="auth-user" id="authUser" hidden>
+        <img class="auth-avatar" id="authAvatar" alt="" referrerpolicy="no-referrer" />
+        <span class="auth-name" id="authName"></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Game stage -->
+  <main class="stage">
+    <div class="game-frame" id="gameFrame">
+      <!-- Phaser canvas mounts here -->
+      <div id="game"></div>
+
+      <!-- Start overlay -->
+      <div class="overlay" id="startScreen">
+        <div class="overlay-card">
+          <div class="logo-bird"></div>
+          <h1 class="overlay-title">Flappy Bird</h1>
+          <p class="overlay-sub">Tap, click, or press <kbd>Space</kbd> to flap.<br/>Dodge the pipes and chase your best score.</p>
+          <button class="play-cta" id="startBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+            Play
+          </button>
+          <div class="best-row">
+            <span>Best</span>
+            <strong id="bestStart">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game over overlay -->
+      <div class="overlay" id="gameOverScreen" hidden>
+        <div class="overlay-card">
+          <h2 class="overlay-title sm">Game Over</h2>
+          <div class="score-grid">
+            <div class="score-box">
+              <span class="score-label">Score</span>
+              <strong class="score-val" id="finalScore">0</strong>
+            </div>
+            <div class="score-box">
+              <span class="score-label">Best</span>
+              <strong class="score-val" id="bestScore">0</strong>
+            </div>
+          </div>
+          <div class="save-note" id="saveNote"></div>
+          <button class="play-cta" id="restartBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+            Play again
+          </button>
+          <a class="ghost-link" href="/index.html">Back to all games</a>
+        </div>
+      </div>
+
+      <!-- Live score (during play) -->
+      <div class="live-score" id="liveScore" hidden>0</div>
+    </div>
+
+    <p class="controls-hint">Space / Click / Tap to flap · <kbd>P</kbd> to pause</p>
+  </main>
+
+  <!-- Phaser (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+  <!-- Game + Firebase score saving -->
+  <script type="module" src="/games/flappy-bird/game.js"></script>
+</body>
+</html>
