@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Games4All — Play. Compete. Climb the ranks.</title>
+  <meta name="description" content="A growing arcade of free browser games. Sign in, play, and track your high scores." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Animated background -->
+  <div class="bg-aurora" aria-hidden="true">
+    <span class="blob blob-1"></span>
+    <span class="blob blob-2"></span>
+    <span class="blob blob-3"></span>
+  </div>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <!-- Navbar -->
+  <header class="nav">
+    <a class="brand" href="/">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="6" y1="11" x2="10" y2="11"></line>
+          <line x1="8" y1="9" x2="8" y2="13"></line>
+          <line x1="15" y1="12" x2="15.01" y2="12"></line>
+          <line x1="18" y1="10" x2="18.01" y2="10"></line>
+          <path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.544-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.152A4 4 0 0 0 17.32 5z"></path>
+        </svg>
+      </span>
+      <span class="brand-text">Games<span class="brand-accent">4</span>All</span>
+    </a>
+
+    <nav class="nav-links">
+      <a href="#games">Games</a>
+      <a href="/leaderboard">Leaderboard</a>
+      <a href="#about">About</a>
+    </nav>
+
+    <div class="nav-auth">
+      <!-- Signed out -->
+      <button id="signInBtn" class="btn btn-google">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+          <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+          <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+          <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+          <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+        </svg>
+        <span>Sign in with Google</span>
+      </button>
+
+      <!-- Signed in -->
+      <div id="userMenu" class="user-menu" hidden>
+        <button id="userMenuBtn" class="user-chip" aria-haspopup="true" aria-expanded="false">
+          <img id="userAvatar" class="user-avatar" alt="" referrerpolicy="no-referrer" />
+          <span id="userName" class="user-name"></span>
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div id="userDropdown" class="dropdown" hidden>
+          <div class="dropdown-head">
+            <img id="userAvatarLg" class="user-avatar lg" alt="" referrerpolicy="no-referrer" />
+            <div>
+              <div id="userNameLg" class="dd-name"></div>
+              <div id="userEmail" class="dd-email"></div>
+            </div>
+          </div>
+          <button id="signOutBtn" class="dropdown-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            Sign out
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <main>
+    <section class="hero">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        New games added regularly
+      </div>
+      <h1 class="hero-title">
+        Your arcade,<br />
+        <span class="grad-text">reimagined.</span>
+      </h1>
+      <p class="hero-sub">
+        Jump into fast, free browser games built with Phaser. Sign in to save your
+        high scores and climb the global leaderboards.
+      </p>
+      <div class="hero-cta">
+        <a href="#games" class="btn btn-primary btn-lg">
+          Play now
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        </a>
+        <a href="#about" class="btn btn-ghost btn-lg">Learn more</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num" id="statGames">6</span><span class="stat-label">Games live</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">∞</span><span class="stat-label">Free to play</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">0</span><span class="stat-label">Downloads needed</span></div>
+      </div>
+    </section>
+
+    <!-- Games grid -->
+    <section id="games" class="section">
+      <div class="section-head">
+        <h2 class="section-title">Pick your game</h2>
+        <p class="section-desc">More titles dropping soon. Bookmark the page.</p>
+      </div>
+
+      <div class="game-grid">
+        <!-- Flappy Bird card -->
+        <article class="game-card">
+          <a class="game-thumb" href="/games/flappy-bird/index.html" aria-label="Play Flappy Bird">
+            <div class="thumb-art flappy-art">
+              <span class="fa-bird"></span>
+              <span class="fa-pipe fa-pipe-1"></span>
+              <span class="fa-pipe fa-pipe-2"></span>
+            </div>
+            <span class="play-overlay">
+              <span class="play-btn">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+              </span>
+            </span>
+          </a>
+          <div class="game-meta">
+            <div class="game-meta-top">
+              <h3 class="game-name">Flappy Bird</h3>
+              <span class="tag tag-live">Live</span>
+            </div>
+            <p class="game-desc">Tap to flap. Dodge the pipes. Chase that high score.</p>
+            <div class="game-foot">
+              <span class="game-genre">Arcade</span>
+              <a class="btn btn-primary btn-sm" href="/games/flappy-bird/index.html">Play</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 2048 card -->
+        <article class="game-card">
+          <a class="game-thumb" href="/games/2048/index.html" aria-label="Play 2048">
+            <div class="thumb-art g2048-art">
+              <span class="t2048 t-2">2</span>
+              <span class="t2048 t-8">8</span>
+              <span class="t2048 t-32">32</span>
+              <span class="t2048 t-2048">2048</span>
+            </div>
+            <span class="play-overlay">
+              <span class="play-btn">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+              </span>
+            </span>
+          </a>
+          <div class="game-meta">
+            <div class="game-meta-top">
+              <h3 class="game-name">2048</h3>
+              <span class="tag tag-live">Live</span>
+            </div>
+            <p class="game-desc">Slide the tiles, merge the numbers, reach 2048.</p>
+            <div class="game-foot">
+              <span class="game-genre">Puzzle</span>
+              <a class="btn btn-primary btn-sm" href="/games/2048/index.html">Play</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Snake card -->
+        <article class="game-card">
+          <a class="game-thumb" href="/games/snake/index.html" aria-label="Play Snake">
+            <div class="thumb-art snake-art">
+              <span class="sn-seg sn-1"></span>
+              <span class="sn-seg sn-2"></span>
+              <span class="sn-seg sn-3"></span>
+              <span class="sn-head"></span>
+              <span class="sn-food"></span>
+            </div>
+            <span class="play-overlay">
+              <span class="play-btn">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+              </span>
+            </span>
+          </a>
+          <div class="game-meta">
+            <div class="game-meta-top">
+              <h3 class="game-name">Snake</h3>
+              <span class="tag tag-live">Live</span>
+            </div>
+            <p class="game-desc">Eat the apples, grow longer, don't bite your tail.</p>
+            <div class="game-foot">
+              <span class="game-genre">Arcade</span>
+              <a class="btn btn-primary btn-sm" href="/games/snake/index.html">Play</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Highway Rush (racing) card -->
+        <article class="game-card">
+          <a class="game-thumb" href="/games/racing/index.html" aria-label="Play Highway Rush">
+            <div class="thumb-art racing-art">
+              <span class="rc-road"></span>
+              <span class="rc-dash rc-dash-1"></span>
+              <span class="rc-dash rc-dash-2"></span>
+              <span class="rc-dash rc-dash-3"></span>
+              <span class="rc-car rc-player"></span>
+              <span class="rc-car rc-enemy"></span>
+            </div>
+            <span class="play-overlay">
+              <span class="play-btn">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+              </span>
+            </span>
+          </a>
+          <div class="game-meta">
+            <div class="game-meta-top">
+              <h3 class="game-name">Highway Rush</h3>
+              <span class="tag tag-live">Live</span>
+            </div>
+            <p class="game-desc">Weave through traffic at speed and go the distance.</p>
+            <div class="game-foot">
+              <span class="game-genre">Racing</span>
+              <a class="btn btn-primary btn-sm" href="/games/racing/index.html">Play</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Parking Panic card -->
+        <article class="game-card">
+          <a class="game-thumb" href="/games/parking/index.html" aria-label="Play Parking Panic">
+            <div class="thumb-art parking-art">
+              <span class="pk-cell pk-target"></span>
+              <span class="pk-cell pk-b1"></span>
+              <span class="pk-cell pk-b2"></span>
+              <span class="pk-cell pk-b3"></span>
+              <span class="pk-exit"></span>
+            </div>
+            <span class="play-overlay">
+              <span class="play-btn">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+              </span>
+            </span>
+          </a>
+          <div class="game-meta">
+            <div class="game-meta-top">
+              <h3 class="game-name">Parking Panic</h3>
+              <span class="tag tag-live">Live</span>
+            </div>
+            <p class="game-desc">Slide the cars to free the red one. 10 tricky puzzles.</p>
+            <div class="game-foot">
+              <span class="game-genre">Puzzle</span>
+              <a class="btn btn-primary btn-sm" href="/games/parking/index.html">Play</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Tetris card -->
+        <article class="game-card">
+          <a class="game-thumb" href="/games/tetris/index.html" aria-label="Play Tetris">
+            <div class="thumb-art tetris-art">
+              <span class="tet-row tet-row-1">
+                <span class="tet-cell tc-cyan"></span><span class="tet-cell tc-cyan"></span><span class="tet-cell tc-cyan"></span><span class="tet-cell tc-cyan"></span>
+              </span>
+              <span class="tet-row tet-row-2">
+                <span class="tet-cell tc-purple"></span><span class="tet-cell tc-purple"></span><span class="tet-cell tc-empty"></span><span class="tet-cell tc-orange"></span>
+              </span>
+              <span class="tet-row tet-row-3">
+                <span class="tet-cell tc-empty"></span><span class="tet-cell tc-purple"></span><span class="tet-cell tc-orange"></span><span class="tet-cell tc-orange"></span>
+              </span>
+              <span class="tet-row tet-row-4">
+                <span class="tet-cell tc-blue"></span><span class="tet-cell tc-yellow"></span><span class="tet-cell tc-yellow"></span><span class="tet-cell tc-green"></span>
+              </span>
+              <span class="tet-row tet-row-5">
+                <span class="tet-cell tc-blue"></span><span class="tet-cell tc-yellow"></span><span class="tet-cell tc-yellow"></span><span class="tet-cell tc-green"></span>
+              </span>
+            </div>
+            <span class="play-overlay">
+              <span class="play-btn">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+              </span>
+            </span>
+          </a>
+          <div class="game-meta">
+            <div class="game-meta-top">
+              <h3 class="game-name">Tetris</h3>
+              <span class="tag tag-live">Live</span>
+            </div>
+            <p class="game-desc">Stack the blocks, clear the lines, survive as long as you can.</p>
+            <div class="game-foot">
+              <span class="game-genre">Puzzle</span>
+              <a class="btn btn-primary btn-sm" href="/games/tetris/index.html">Play</a>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="section about">
+      <div class="about-card">
+        <h2 class="section-title">Built for everyone</h2>
+        <p class="about-text">
+          Games4All is a growing collection of free, instant-play browser games.
+          No installs, no paywalls — just sign in with Google to keep your scores
+          and see how you stack up against players around the world.
+        </p>
+        <div class="feature-row">
+          <div class="feature">
+            <div class="feature-ico">⚡</div>
+            <h4>Instant play</h4>
+            <p>Runs right in your browser. Nothing to download.</p>
+          </div>
+          <div class="feature">
+            <div class="feature-ico">🏆</div>
+            <h4>Saved scores</h4>
+            <p>Sign in once and your high scores follow you.</p>
+          </div>
+          <div class="feature">
+            <div class="feature-ico">🎮</div>
+            <h4>More to come</h4>
+            <p>New games added to the arcade regularly.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <span class="brand-text small">Games<span class="brand-accent">4</span>All</span>
+      <p>© <span id="year"></span> Games4All. Play on.</p>
+    </div>
+  </footer>
+
+  <!-- Username setup modal (shown after first sign-in or for existing users without a username) -->
+  <div class="modal-backdrop" id="usernameModal" hidden>
+    <div class="modal-box">
+      <div class="modal-icon">👤</div>
+      <h2 class="modal-title">Choose your username</h2>
+      <p class="modal-sub">This is how you'll appear on the leaderboard.</p>
+      <div class="modal-field">
+        <input
+          type="text" id="usernameInput" class="modal-input"
+          placeholder="e.g. speedracer99" maxlength="20"
+          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+        />
+        <p class="modal-hint" id="usernameHint">3–20 characters · letters, numbers and underscores only</p>
+      </div>
+      <button class="btn btn-google modal-submit-btn" id="usernameSubmitBtn">Save username</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast" hidden></div>
+
+  <!-- Firebase + app -->
+  <script type="module" src="firebase.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

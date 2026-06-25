@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Snake — Games4All</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/games/snake/style.css" />
+</head>
+<body>
+  <!-- Top bar -->
+  <header class="game-header">
+    <a class="back-link" href="/index.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      <span>All games</span>
+    </a>
+    <div class="game-title"><span class="brand-text">Games<span class="brand-accent">4</span>All</span></div>
+    <div class="auth-status">
+      <span class="auth-hint" id="authHint">Not signed in — scores won't save</span>
+      <div class="auth-user" id="authUser" hidden>
+        <img class="auth-avatar" id="authAvatar" alt="" referrerpolicy="no-referrer" />
+        <span class="auth-name" id="authName"></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="stage">
+    <!-- Score bar -->
+    <div class="scorebar">
+      <div class="title-block">
+        <h1 class="game-name">Snake</h1>
+        <p class="game-tagline">Eat, grow, don't bite yourself.</p>
+      </div>
+      <div class="scores">
+        <div class="score-pill">
+          <span class="score-cap">Score</span>
+          <strong class="score-num" id="scoreVal">0</strong>
+        </div>
+        <div class="score-pill">
+          <span class="score-cap">Best</span>
+          <strong class="score-num" id="bestVal">0</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Board -->
+    <div class="board-wrap" id="boardWrap">
+      <div id="game"></div>
+
+      <!-- Start overlay -->
+      <div class="overlay" id="startScreen">
+        <div class="overlay-inner">
+          <div class="logo-snake"></div>
+          <h2 class="overlay-title">Snake</h2>
+          <p class="overlay-sub">Use <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> or <kbd>WASD</kbd> to steer.<br/>Eat the apples to grow longer.</p>
+          <button class="btn-cta" id="startBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+            Play
+          </button>
+        </div>
+      </div>
+
+      <!-- Game over overlay -->
+      <div class="overlay" id="overScreen" hidden>
+        <div class="overlay-inner">
+          <h2 class="overlay-title">Game over</h2>
+          <div class="final-score"><span>Score</span><strong id="finalScore">0</strong></div>
+          <div class="save-note" id="saveNote"></div>
+          <div class="overlay-actions">
+            <button class="btn-cta" id="restartBtn">Play again</button>
+            <a class="ghost-link" href="/index.html">All games</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <p class="controls-hint">Arrow keys / WASD · swipe on mobile · <kbd>P</kbd> to pause</p>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+  <script type="module" src="/games/snake/game.js"></script>
+</body>
+</html>

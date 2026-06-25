@@ -1,0 +1,10 @@
+{
+  "name": "games4all",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Server-side score validation for the Games4All arcade (Vercel serverless function).",
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  }
+}

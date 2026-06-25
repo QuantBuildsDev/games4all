@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Parking Panic — Games4All</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/games/parking/style.css" />
+</head>
+<body>
+  <header class="game-header">
+    <a class="back-link" href="/index.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      <span>All games</span>
+    </a>
+    <div class="game-title"><span class="brand-text">Games<span class="brand-accent">4</span>All</span></div>
+    <div class="auth-status">
+      <span class="auth-hint" id="authHint">Not signed in — progress won't save</span>
+      <div class="auth-user" id="authUser" hidden>
+        <img class="auth-avatar" id="authAvatar" alt="" referrerpolicy="no-referrer" />
+        <span class="auth-name" id="authName"></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="scorebar">
+      <div class="title-block">
+        <h1 class="game-name">Parking Panic</h1>
+        <p class="game-tagline">Slide the cars. Free the red one.</p>
+      </div>
+      <div class="scores">
+        <div class="score-pill">
+          <span class="score-cap">Level</span>
+          <strong class="score-num" id="levelVal">1</strong>
+        </div>
+        <div class="score-pill">
+          <span class="score-cap">Moves</span>
+          <strong class="score-num" id="movesVal">0</strong>
+        </div>
+        <div class="score-pill">
+          <span class="score-cap">Best</span>
+          <strong class="score-num" id="bestVal">0</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="board-wrap" id="boardWrap">
+      <div id="game"></div>
+
+      <!-- Start overlay -->
+      <div class="overlay" id="startScreen">
+        <div class="overlay-inner">
+          <div class="logo-car"></div>
+          <h2 class="overlay-title">Parking Panic</h2>
+          <p class="overlay-sub">Drag cars along their lane to clear a path.<br/>Get the <strong style="color:#ff7a45">red car</strong> out the exit on the right!</p>
+          <button class="btn-cta" id="startBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+            Play
+          </button>
+        </div>
+      </div>
+
+      <!-- Level solved overlay -->
+      <div class="overlay overlay-soft" id="solvedScreen" hidden>
+        <div class="overlay-inner">
+          <h2 class="overlay-title win" id="solvedTitle">Solved! 🎉</h2>
+          <p class="overlay-sub" id="solvedSub">Nice parking.</p>
+          <div class="save-note" id="saveNote"></div>
+          <div class="overlay-actions">
+            <button class="btn-cta" id="nextBtn">Next level</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- All cleared overlay -->
+      <div class="overlay" id="allClearScreen" hidden>
+        <div class="overlay-inner">
+          <h2 class="overlay-title win">All cleared! 🏆</h2>
+          <p class="overlay-sub">You solved every puzzle. Legend.</p>
+          <div class="save-note" id="saveNote2"></div>
+          <div class="overlay-actions">
+            <button class="btn-cta" id="replayBtn">Play again</button>
+            <a class="ghost-link" href="/index.html">All games</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="newgame-btn" id="restartLevelBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+        Restart level
+      </button>
+      <p class="controls-hint">Tap & drag a car along its lane · <span class="credit">Art: Kenney.nl (CC0)</span></p>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+  <script type="module" src="/games/parking/game.js"></script>
+</body>
+</html>

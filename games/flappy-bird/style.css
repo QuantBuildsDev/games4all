@@ -1,0 +1,244 @@
+/* ============================================================
+   Flappy Bird — game page styles
+   ============================================================ */
+
+:root {
+  --bg:        #07080f;
+  --bg-soft:   #0d0f1a;
+  --surface:   rgba(255, 255, 255, 0.05);
+  --surface-2: rgba(255, 255, 255, 0.08);
+  --border:    rgba(255, 255, 255, 0.10);
+  --border-2:  rgba(255, 255, 255, 0.16);
+  --text:      #f3f4fb;
+  --text-dim:  #a9adc4;
+  --text-mute: #6f7390;
+  --accent:    #7c5cff;
+  --accent-2:  #21d4fd;
+  --good:      #2fe6a8;
+  --grad: linear-gradient(120deg, #7c5cff 0%, #21d4fd 100%);
+  --radius: 18px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* The [hidden] attribute must always win over class-based display rules
+   (e.g. .overlay{display:grid}, .auth-user{display:flex}). */
+[hidden] { display: none !important; }
+
+body {
+  font-family: "Outfit", system-ui, sans-serif;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(124,92,255,0.18), transparent 60%),
+    var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+kbd {
+  font-family: "Space Grotesk", monospace;
+  font-size: 0.78em;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  padding: 0.1em 0.45em;
+}
+
+/* ---------- Header ---------- */
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem clamp(1rem, 4vw, 2rem);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  background: rgba(7, 8, 15, 0.6);
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text-dim);
+  font-weight: 500;
+  font-size: 0.92rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+.back-link:hover { color: var(--text); background: var(--surface-2); border-color: var(--border-2); }
+.brand-text { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 1.1rem; letter-spacing: -0.02em; }
+.brand-accent { color: var(--accent-2); }
+
+.auth-status { display: flex; align-items: center; min-width: 0; }
+.auth-hint { font-size: 0.82rem; color: var(--text-mute); }
+.auth-user { display: flex; align-items: center; gap: 0.5rem; }
+.auth-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--surface-2); }
+.auth-name { font-weight: 600; font-size: 0.9rem; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- Stage ---------- */
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.game-frame {
+  position: relative;
+  width: min(100%, 420px);
+  aspect-ratio: 2 / 3;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid var(--border-2);
+  box-shadow: 0 30px 80px -30px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.03);
+  background: #4ec0ff;
+}
+#game, #game canvas { width: 100% !important; height: 100% !important; display: block; }
+
+.controls-hint { color: var(--text-mute); font-size: 0.85rem; text-align: center; }
+
+/* ---------- Overlays ---------- */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: rgba(7, 8, 15, 0.55);
+  backdrop-filter: blur(6px);
+  animation: fade 0.25s var(--ease);
+}
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+.overlay-card {
+  width: 100%;
+  max-width: 300px;
+  background: rgba(13, 15, 26, 0.92);
+  border: 1px solid var(--border-2);
+  border-radius: 22px;
+  padding: 2rem 1.6rem;
+  text-align: center;
+  box-shadow: 0 24px 60px -20px rgba(0,0,0,0.7);
+}
+.logo-bird {
+  width: 56px; height: 56px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffe066, #f5b400);
+  box-shadow: inset -4px -4px 0 rgba(0,0,0,0.12);
+  position: relative;
+  animation: bob 1.6s ease-in-out infinite;
+}
+.logo-bird::after {
+  content: "";
+  position: absolute;
+  right: -7px; top: 22px;
+  border-left: 12px solid #ff8c42;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+}
+@keyframes bob { 50% { transform: translateY(-10px) rotate(-8deg); } }
+
+.overlay-title {
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.overlay-title.sm { font-size: 1.5rem; }
+.overlay-sub { color: var(--text-dim); font-size: 0.92rem; margin-bottom: 1.4rem; }
+
+.play-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #fff;
+  background: var(--grad);
+  border: none;
+  border-radius: 999px;
+  padding: 0.85rem 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 12px 30px -10px rgba(124,92,255,0.8);
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.play-cta:hover { transform: translateY(-2px); box-shadow: 0 18px 40px -12px rgba(124,92,255,0.9); }
+.play-cta:active { transform: translateY(0) scale(0.98); }
+
+.best-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
+  color: var(--text-mute);
+  font-size: 0.9rem;
+}
+.best-row strong { font-family: "Space Grotesk", sans-serif; color: var(--text); font-size: 1.1rem; }
+
+.score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin: 1.2rem 0; }
+.score-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.9rem 0.5rem;
+}
+.score-label { display: block; font-size: 0.75rem; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.08em; }
+.score-val { font-family: "Space Grotesk", sans-serif; font-size: 2rem; font-weight: 700; }
+
+.save-note {
+  min-height: 1.2em;
+  font-size: 0.84rem;
+  margin-bottom: 1rem;
+  color: var(--text-mute);
+}
+.save-note.saved { color: var(--good); }
+.save-note.signin { color: var(--accent-2); }
+
+.ghost-link {
+  display: inline-block;
+  margin-top: 0.9rem;
+  color: var(--text-mute);
+  font-size: 0.86rem;
+  transition: color 0.2s;
+}
+.ghost-link:hover { color: var(--text); }
+
+/* ---------- Live score ---------- */
+.live-score {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 3.2rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 3px 0 rgba(0,0,0,0.25), 0 0 18px rgba(0,0,0,0.3);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; }
+}

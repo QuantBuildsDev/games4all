@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leaderboard — Games4All</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/leaderboard/style.css" />
+</head>
+<body>
+
+  <header class="nav">
+    <a class="back-link" href="/index.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      <span>All games</span>
+    </a>
+    <a class="brand" href="/index.html">
+      <span class="brand-text">Games<span class="brand-accent">4</span>All</span>
+    </a>
+    <div class="auth-status">
+      <span class="auth-hint" id="authHint">Not signed in</span>
+      <div class="auth-user" id="authUser" hidden>
+        <img class="auth-avatar" id="authAvatar" alt="" referrerpolicy="no-referrer" />
+        <span class="auth-name" id="authName"></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="lb-main">
+    <!-- Hero -->
+    <div class="lb-hero">
+      <h1 class="lb-hero-title">🏆 Leaderboard</h1>
+      <p class="lb-hero-sub">Top players across every game</p>
+    </div>
+
+    <!-- Game tabs -->
+    <div class="lb-tabs-wrap">
+      <nav class="lb-tabs" id="lbTabs">
+        <button class="lb-tab active" data-game="flappybird">
+          <span class="tab-emoji">🐦</span><span class="tab-name">Flappy Bird</span>
+        </button>
+        <button class="lb-tab" data-game="game2048">
+          <span class="tab-emoji">🔢</span><span class="tab-name">2048</span>
+        </button>
+        <button class="lb-tab" data-game="snake">
+          <span class="tab-emoji">🐍</span><span class="tab-name">Snake</span>
+        </button>
+        <button class="lb-tab" data-game="racing">
+          <span class="tab-emoji">🏎️</span><span class="tab-name">Highway Rush</span>
+        </button>
+        <button class="lb-tab" data-game="parking">
+          <span class="tab-emoji">🅿️</span><span class="tab-name">Parking Panic</span>
+        </button>
+        <button class="lb-tab" data-game="tetris">
+          <span class="tab-emoji">🧱</span><span class="tab-name">Tetris</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Panel area -->
+    <div class="lb-panel-wrap">
+
+      <div class="lb-panel active" id="panel-flappybird">
+        <div class="lb-panel-header">
+          <div class="panel-title-row">
+            <span class="panel-emoji">🐦</span>
+            <div>
+              <h2 class="panel-title">Flappy Bird</h2>
+              <p class="panel-sub">Ranked by pipes cleared</p>
+            </div>
+            <a class="panel-play-btn" href="/games/flappy-bird/index.html">Play →</a>
+          </div>
+        </div>
+        <div class="lb-rows" id="rows-flappybird"><div class="lb-loading"><span class="spinner"></span>Loading scores…</div></div>
+      </div>
+
+      <div class="lb-panel" id="panel-game2048">
+        <div class="lb-panel-header">
+          <div class="panel-title-row">
+            <span class="panel-emoji">🔢</span>
+            <div>
+              <h2 class="panel-title">2048</h2>
+              <p class="panel-sub">Ranked by total score</p>
+            </div>
+            <a class="panel-play-btn" href="/games/2048/index.html">Play →</a>
+          </div>
+        </div>
+        <div class="lb-rows" id="rows-game2048"><div class="lb-loading"><span class="spinner"></span>Loading scores…</div></div>
+      </div>
+
+      <div class="lb-panel" id="panel-snake">
+        <div class="lb-panel-header">
+          <div class="panel-title-row">
+            <span class="panel-emoji">🐍</span>
+            <div>
+              <h2 class="panel-title">Snake</h2>
+              <p class="panel-sub">Ranked by apples eaten</p>
+            </div>
+            <a class="panel-play-btn" href="/games/snake/index.html">Play →</a>
+          </div>
+        </div>
+        <div class="lb-rows" id="rows-snake"><div class="lb-loading"><span class="spinner"></span>Loading scores…</div></div>
+      </div>
+
+      <div class="lb-panel" id="panel-racing">
+        <div class="lb-panel-header">
+          <div class="panel-title-row">
+            <span class="panel-emoji">🏎️</span>
+            <div>
+              <h2 class="panel-title">Highway Rush</h2>
+              <p class="panel-sub">Ranked by distance driven</p>
+            </div>
+            <a class="panel-play-btn" href="/games/racing/index.html">Play →</a>
+          </div>
+        </div>
+        <div class="lb-rows" id="rows-racing"><div class="lb-loading"><span class="spinner"></span>Loading scores…</div></div>
+      </div>
+
+      <div class="lb-panel" id="panel-parking">
+        <div class="lb-panel-header">
+          <div class="panel-title-row">
+            <span class="panel-emoji">🅿️</span>
+            <div>
+              <h2 class="panel-title">Parking Panic</h2>
+              <p class="panel-sub">Ranked by furthest level reached — levels get harder, so Level 10 is the ultimate flex</p>
+            </div>
+            <a class="panel-play-btn" href="/games/parking/index.html">Play →</a>
+          </div>
+        </div>
+        <div class="lb-rows" id="rows-parking"><div class="lb-loading"><span class="spinner"></span>Loading scores…</div></div>
+      </div>
+
+      <div class="lb-panel" id="panel-tetris">
+        <div class="lb-panel-header">
+          <div class="panel-title-row">
+            <span class="panel-emoji">🧱</span>
+            <div>
+              <h2 class="panel-title">Tetris</h2>
+              <p class="panel-sub">Ranked by total score</p>
+            </div>
+            <a class="panel-play-btn" href="/games/tetris/index.html">Play →</a>
+          </div>
+        </div>
+        <div class="lb-rows" id="rows-tetris"><div class="lb-loading"><span class="spinner"></span>Loading scores…</div></div>
+      </div>
+
+    </div><!-- /lb-panel-wrap -->
+  </main>
+
+  <script type="module" src="/leaderboard/leaderboard.js"></script>
+</body>
+</html>
