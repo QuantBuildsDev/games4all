@@ -2,8 +2,9 @@ name: Post gaming news
 
 on:
   schedule:
-    # 14:00 UTC every day. Change this cron to adjust frequency.
-    - cron: "0 14 * * *"
+    # 13:00 UTC = 9am Eastern (EDT). Cron is fixed UTC and ignores daylight
+    # saving, so this becomes 8am in winter (EST) — bump to "0 14 * * *" then if it matters.
+    - cron: "0 13 * * *"
   workflow_dispatch: {}   # lets you trigger a post manually from the Actions tab
 
 # Allow the job to commit the updated articles file back to the repo

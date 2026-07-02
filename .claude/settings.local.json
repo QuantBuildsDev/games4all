@@ -20,7 +20,10 @@
       "Bash(node _gen.mjs)",
       "Bash(node _check.mjs)",
       "Bash(node --check game.js)",
-      "Bash(firebase deploy *)"
+      "Bash(firebase deploy *)",
+      "Bash(node _test-news.mjs)",
+      "Bash(rm -f _test-news.mjs)",
+      "Bash(node scripts/generate-news.mjs)"
     ]
   }
 }
