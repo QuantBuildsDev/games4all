@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gaming News — Games4All</title>
+  <meta name="description" content="The latest gaming news, with a Games4All take. Updated daily." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/news/style.css" />
+</head>
+<body>
+
+  <header class="nav">
+    <a class="back-link" href="/index.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      <span>All games</span>
+    </a>
+    <a class="brand" href="/index.html">
+      <span class="brand-text">Games<span class="brand-accent">4</span>All</span>
+    </a>
+    <a class="lb-link" href="/leaderboard">Leaderboard</a>
+  </header>
+
+  <main class="news-main">
+    <div class="news-hero">
+      <h1 class="news-hero-title">📰 Gaming News</h1>
+      <p class="news-hero-sub">The latest from across the industry — with our take. Fresh drops daily.</p>
+    </div>
+
+    <div class="news-list" id="newsList">
+      <div class="news-loading"><span class="spinner"></span>Loading the latest…</div>
+    </div>
+  </main>
+
+  <script type="module" src="/news/news.js"></script>
+</body>
+</html>
