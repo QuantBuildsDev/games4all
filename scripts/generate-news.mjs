@@ -1,15 +1,20 @@
 // ============================================================
-//  generate-news.mjs — fetch a real gaming story, write an
+//  generate-news.mjs — fetch a real VIDEO-GAME story, write an
 //  original take with Gemini, and prepend it to news/articles.json
 // ============================================================
 //
 //  Runs in GitHub Actions once a day (see .github/workflows/news.yml).
 //  Needs env var GEMINI_API_KEY (a GitHub secret; locally read from .env).
 //
-//  Flow: RSS feed → newest unposted story that is genuinely about VIDEO GAMES
-//  (Gemini filters out movie/TV/celebrity items, even game adaptations) →
-//  extract FULL article text (fallback: RSS summary) → Gemini writes a
-//  ~100-word take → save one file.  Set DRY_RUN=1 to preview without writing.
+//  To stay well under the Gemini free-tier rate limits, a run makes only
+//  TWO API calls:
+//    1) ONE call classifies a shortlist of recent headlines and picks the
+//       first that is genuinely about video games (games, consoles/hardware,
+//       or the games industry) — skipping movies/TV/actors/anime/music, even
+//       game adaptations. Uses the cheap, high-limit flash-lite model.
+//    2) ONE call writes the ~100-word take on the chosen article's full text.
+//
+//  Set DRY_RUN=1 to preview the chosen article without writing the file.
 // ------------------------------------------------------------
 
 import { readFileSync, writeFileSync, existsSync } from "fs";
@@ -22,17 +27,19 @@ const FEEDS = [
   { name: "Polygon",  url: "https://www.polygon.com/rss/index.xml" },
   { name: "PC Gamer", url: "https://www.pcgamer.com/rss/" },
 ];
-const MODEL = "gemini-2.5-flash";      // swap to gemini-3.5-flash for newer prose
-const MAX_ARTICLES = 30;               // cap the file size
-const ARTICLES_PATH = new URL("../news/articles.json", import.meta.url);
+const CLASSIFY_MODEL = "gemini-2.5-flash-lite"; // cheap + high free limits for the GAME/SKIP pick
+const WRITE_MODEL    = "gemini-2.5-flash";      // nicer prose for the take (swap to gemini-3.5-flash for newer)
+const MAX_CANDIDATES = 15;   // recent items considered in the single classification call
+const MAX_ARTICLES   = 30;   // cap the file size
+const ARTICLES_PATH  = new URL("../news/articles.json", import.meta.url);
 
 // ---------- Helpers ----------
 const strip = (html) => (html || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 const wc = (s) => (s ? s.trim().split(/\s+/).filter(Boolean).length : 0);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function loadKey() {
   if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY.trim();
-  // Local fallback: read .env
   try {
     const env = readFileSync(new URL("../.env", import.meta.url), "utf8");
     const m = env.match(/^GEMINI_API_KEY=(.*)$/m);
@@ -49,14 +56,11 @@ function loadArticles() {
   } catch { return []; }
 }
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-// Shared Gemini call. 2.5-flash is a "thinking" model; disable thinking so the
-// whole token budget goes to the answer (not internal reasoning). Retries on
-// rate limits (429) and transient 5xx so the daily run doesn't drop a story.
-async function gemini(key, prompt, { maxOutputTokens = 600, temperature = 0.9 } = {}) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${key}`;
-  const backoffs = [3000, 10000, 25000];
+// Shared Gemini call. 2.5 models are "thinking" models; disable thinking so the
+// whole token budget goes to the answer. Retries on rate limits (429) and 5xx.
+async function gemini(key, prompt, { model = WRITE_MODEL, maxOutputTokens = 600, temperature = 0.9 } = {}) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+  const backoffs = [4000, 12000, 30000];
   let lastErr;
   for (let attempt = 0; attempt <= backoffs.length; attempt++) {
     let res;
@@ -70,7 +74,7 @@ async function gemini(key, prompt, { maxOutputTokens = 600, temperature = 0.9 } 
         }),
       });
     } catch (e) {
-      lastErr = e; // network blip — retry
+      lastErr = e;
       if (attempt < backoffs.length) { await sleep(backoffs[attempt]); continue; }
       throw lastErr;
     }
@@ -82,36 +86,39 @@ async function gemini(key, prompt, { maxOutputTokens = 600, temperature = 0.9 } 
       lastErr = new Error("Gemini returned no text: " + JSON.stringify(data).slice(0, 200));
     } else {
       lastErr = new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 150)}`);
-      // Only retry rate limits / server errors; fail fast on 4xx like bad key.
-      if (res.status !== 429 && res.status < 500) throw lastErr;
+      if (res.status !== 429 && res.status < 500) throw lastErr; // fail fast on bad key etc.
+      if (attempt < backoffs.length) console.log(`  (rate-limited, retrying in ${backoffs[attempt] / 1000}s…)`);
     }
     if (attempt < backoffs.length) await sleep(backoffs[attempt]);
   }
   throw lastErr;
 }
 
-// Gate: is this story ACTUALLY about video games (incl. consoles + industry)?
-// Movies, TV, actors etc. are rejected even when they involve/adapt a game.
-async function isVideoGameStory({ key, title, summary }) {
+// ONE call: from the shortlist, return the index of the first real video-game
+// story, or -1 if none qualify.
+async function pickGameIndex(key, shortlist) {
+  const list = shortlist.map((c, i) => {
+    const t = (c.item.title || "").trim();
+    const s = strip(c.item.contentSnippet || c.item.content || c.item.summary || "").slice(0, 140);
+    return `${i + 1}. ${t}${s ? " — " + s : ""}`;
+  }).join("\n");
+
   const prompt =
-`Classify this news item for a VIDEO GAMES news feed. Reply with exactly one word: GAME or SKIP.
+`You curate a VIDEO GAMES news feed. From the numbered list below, pick the FIRST item
+that is primarily about a video game (releases, gameplay, updates, patches, DLC, reviews),
+video game hardware/consoles (PlayStation, Xbox, Nintendo, Switch, Steam, PC, handhelds),
+or the video game industry/business (studios, sales, layoffs, acquisitions, showcases).
 
-GAME = primarily about a video game (releases, gameplay, updates, patches, DLC, reviews),
-       video game hardware or consoles (PlayStation, Xbox, Nintendo, Switch, Steam, PC, handhelds),
-       or the video game industry/business (studios, sales, layoffs, acquisitions, showcases).
-SKIP = primarily about movies, TV shows, streaming series, actors, celebrities, comics, anime,
-       music, or other entertainment — EVEN IF it involves or adapts a video game
-       (a game being turned into a film or TV show is SKIP).
+Ignore anything primarily about movies, TV shows, streaming series, actors, celebrities,
+comics, anime, or music — EVEN IF it involves or adapts a video game.
 
-TITLE: ${title}
-SUMMARY: ${summary}`;
-  try {
-    const ans = (await gemini(key, prompt, { maxOutputTokens: 5, temperature: 0 })).toUpperCase();
-    return ans.includes("GAME") && !ans.includes("SKIP");
-  } catch (e) {
-    console.log(`  (classify error: ${e.message} — treating as SKIP)`);
-    return false;
-  }
+Reply with ONLY that item's number. If none qualify, reply 0.
+
+${list}`;
+
+  const ans = await gemini(key, prompt, { model: CLASSIFY_MODEL, maxOutputTokens: 8, temperature: 0 });
+  const n = parseInt((ans.match(/\d+/) || ["0"])[0], 10);
+  return (Number.isInteger(n) && n >= 1 && n <= shortlist.length) ? n - 1 : -1;
 }
 
 async function writeTake({ key, title, body, sourceName }) {
@@ -134,7 +141,7 @@ HEADLINE: ${title}
 SOURCE: ${sourceName}
 ARTICLE TEXT:
 ${clipped}`;
-  return gemini(key, prompt, { maxOutputTokens: 600, temperature: 0.9 });
+  return gemini(key, prompt, { model: WRITE_MODEL, maxOutputTokens: 600, temperature: 0.9 });
 }
 
 // ---------- Main ----------
@@ -148,46 +155,42 @@ const articles = loadArticles();
 const posted = new Set(articles.map((a) => a.source));
 const rss = new Parser({ timeout: 20000 });
 
-// Rotate the starting feed per post so sources vary across days
-// (IGN → Polygon → PC Gamer → …), then fall through if it has nothing new.
+// Rotate the starting feed per post so sources vary across days.
 const start = articles.length % FEEDS.length;
 const order = FEEDS.map((_, i) => FEEDS[(start + i) % FEEDS.length]);
 
-// Walk candidates across feeds (in rotation order) and pick the newest
-// unposted story that is genuinely about video games.
-const MAX_CANDIDATES = 12; // bound how many classification calls we make
-let chosen = null;
-let checked = 0;
-
-outer:
+// Collect a shortlist of recent unposted items (no API calls here).
+const candidates = [];
 for (const feed of order) {
   let parsed;
   try {
     parsed = await rss.parseURL(feed.url);
   } catch (e) {
-    console.log(`· ${feed.name}: feed error (${e.message}), trying next`);
+    console.log(`· ${feed.name}: feed error (${e.message}), skipping`);
     continue;
   }
   for (const it of parsed.items) {
     if (!it.link || posted.has(it.link)) continue;
-    if (checked >= MAX_CANDIDATES) break outer;
-    checked++;
-    const t = (it.title || "").trim();
-    const s = strip(it.contentSnippet || it.content || it.summary || "");
-    if (await isVideoGameStory({ key, title: t, summary: s })) {
-      chosen = { feed, item: it };
-      break outer;
-    }
-    console.log(`· skip (not a game): [${feed.name}] ${t.slice(0, 60)}`);
+    candidates.push({ feed, item: it });
   }
+  if (candidates.length >= MAX_CANDIDATES) break;
 }
+const shortlist = candidates.slice(0, MAX_CANDIDATES);
 
-if (!chosen) {
-  console.log("No fresh video-game story found today. Nothing to post.");
+if (!shortlist.length) {
+  console.log("No new articles across any feed today. Nothing to post.");
+  process.exit(0);
+}
+console.log(`Considering ${shortlist.length} recent headlines…`);
+
+// ONE classification call picks the first genuine video-game story.
+const idx = await pickGameIndex(key, shortlist);
+if (idx < 0) {
+  console.log("No fresh video-game story among the candidates today. Nothing to post.");
   process.exit(0);
 }
 
-const { feed, item } = chosen;
+const { feed, item } = shortlist[idx];
 const title = (item.title || "").trim();
 console.log(`Chosen: [${feed.name}] ${title}`);
 
