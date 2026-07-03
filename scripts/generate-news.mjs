@@ -28,7 +28,8 @@ const FEEDS = [
   { name: "PC Gamer", url: "https://www.pcgamer.com/rss/" },
 ];
 const CLASSIFY_MODEL = "gemini-2.5-flash-lite"; // cheap + high free limits for the GAME/SKIP pick
-const WRITE_MODEL    = "gemini-2.5-flash";      // nicer prose for the take (swap to gemini-3.5-flash for newer)
+const WRITE_MODEL    = "gemini-2.5-flash";      // preferred: nicer prose for the take
+const FALLBACK_MODEL = "gemini-2.5-flash-lite"; // used only when WRITE_MODEL is out of quota (429)
 const MAX_CANDIDATES = 15;   // recent items considered in the single classification call
 const MAX_ARTICLES   = 30;   // cap the file size
 const ARTICLES_PATH  = new URL("../news/articles.json", import.meta.url);
@@ -58,9 +59,8 @@ function loadArticles() {
 
 // Shared Gemini call. 2.5 models are "thinking" models; disable thinking so the
 // whole token budget goes to the answer. Retries on rate limits (429) and 5xx.
-async function gemini(key, prompt, { model = WRITE_MODEL, maxOutputTokens = 600, temperature = 0.9 } = {}) {
+async function gemini(key, prompt, { model = WRITE_MODEL, maxOutputTokens = 600, temperature = 0.9, backoffs = [4000, 12000, 30000] } = {}) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-  const backoffs = [4000, 12000, 30000];
   let lastErr;
   for (let attempt = 0; attempt <= backoffs.length; attempt++) {
     let res;
@@ -141,7 +141,17 @@ HEADLINE: ${title}
 SOURCE: ${sourceName}
 ARTICLE TEXT:
 ${clipped}`;
-  return gemini(key, prompt, { model: WRITE_MODEL, maxOutputTokens: 600, temperature: 0.9 });
+
+  const opts = { maxOutputTokens: 600, temperature: 0.9 };
+  try {
+    // Prefer 2.5-flash, but fail fast (one quick retry) so we don't stall long
+    // before falling back when it's out of quota.
+    return await gemini(key, prompt, { ...opts, model: WRITE_MODEL, backoffs: [4000] });
+  } catch (e) {
+    if (!/\b429\b|quota/i.test(e.message)) throw e; // real error, not a quota issue
+    console.log(`${WRITE_MODEL} out of quota — falling back to ${FALLBACK_MODEL}`);
+    return await gemini(key, prompt, { ...opts, model: FALLBACK_MODEL });
+  }
 }
 
 // ---------- Main ----------
