@@ -1,80 +1,134 @@
 # Games4All 🎮
 
-A growing arcade of free, instant-play browser games — built with plain HTML/CSS/JS,
-[Phaser 3](https://phaser.io/) for the games, and **Firebase** for Google sign-in
-and high-score storage. Deploys as a static site on **Vercel**.
+A full-stack arcade of free, instant-play browser games — with Google sign-in,
+global leaderboards, server-validated high scores, and an **AI-powered gaming
+news feed that updates itself daily**.
+
+🕹️ **Live:** [games4all-delta.vercel.app](https://games4all-delta.vercel.app)
 
 ---
 
+## Features
 
-```js
-const firebaseConfig = {
-  apiKey: "AIza………",
-  authDomain: "games4all-xxxxx.firebaseapp.com",
-  projectId: "games4all-xxxxx",
-  storageBucket: "games4all-xxxxx.appspot.com",
-  messagingSenderId: "0000000000",
-  appId: "1:0000000000:web:abcdef……",
-};
+- **6 arcade games** built with [Phaser 3](https://phaser.io/) — Flappy Bird, 2048, Snake, Highway Rush, Parking Panic, and Tetris.
+- **Google sign-in** via Firebase Authentication.
+- **Global leaderboards** — per-game high scores stored in Cloud Firestore.
+- **Cheat-resistant scores** — scores are validated and written by a serverless function, not the browser (see [Architecture](#architecture)).
+- **Automated Gaming News** — a daily GitHub Action pulls real gaming headlines, writes an original take with the Google Gemini API, and publishes them automatically.
+
+## Tech stack
+
+| Area | Technology |
+|------|-----------|
+| Frontend | Vanilla JavaScript (ES Modules), HTML5, CSS3, Phaser 3 |
+| Auth & Database | Firebase Authentication (Google OAuth), Cloud Firestore |
+| Backend | Vercel Serverless Functions (Node.js), Firebase Admin SDK |
+| Automation & AI | GitHub Actions (cron), Google Gemini API, RSS parsing |
+| Hosting / CI | Vercel (auto-deploy on push to `main`) |
+
+---
+
+## Architecture
+
+### Server-validated scores (anti-cheat)
+
+Because the games run entirely in the browser, a player could otherwise open the
+console and write any score straight to the database. To prevent that:
+
+1. The browser **cannot write to the `scores` collection at all** — Firestore
+   Security Rules block all client writes.
+2. When a game ends, it `POST`s the score to **`/api/submit-score`** (a Vercel
+   serverless function) with the user's Firebase ID token.
+3. The function **verifies the token**, validates and caps the score, and writes
+   it via the **Firebase Admin SDK** inside a transaction that never lowers an
+   existing best.
+
+```
+Browser game ──POST {score, idToken}──▶ /api/submit-score ──(Admin SDK)──▶ Firestore
+                                         (verify · validate · cap)
 ```
 
-> ℹ️ These keys are **safe to expose** in client-side code — that's how Firebase
-> web apps work. Security is enforced by Auth settings + Firestore rules, not by
-> hiding the API key.
+Firestore Security Rules ([`firestore.rules`](firestore.rules)) additionally enforce
+per-field types/ranges, monotonic scores, and a strict document shape to prevent
+tampering and quota abuse.
 
-### 4. Enable Google Sign-In
-1. Left sidebar → **Build → Authentication** → **Get started**.
-2. **Sign-in method** tab → click **Google** → toggle **Enable**.
-3. Pick a support email → **Save**.
+### Automated AI news feed
 
-### 5. Authorize your domains
-Still under **Authentication → Settings → Authorized domains**, make sure these are listed
-(add any that are missing):
-- `localhost` (for local testing)
-- your Vercel domain, e.g. `games4all.vercel.app`
-- your custom domain, if you add one later
+A scheduled **GitHub Actions** workflow ([`.github/workflows/news.yml`](.github/workflows/news.yml))
+runs once a day and:
 
-That's it — sign-in will now work. 🎉
+1. Pulls the latest headlines from gaming **RSS feeds** (IGN, Polygon, PC Gamer).
+2. Uses the **Gemini API** to pick the first genuine *video-game* story (filtering
+   out movie/TV/celebrity items) and write an original ~100-word take.
+3. Writes the result to [`news/articles.json`](news/articles.json) and commits it —
+   which triggers a **Vercel auto-deploy**, publishing the article live.
 
-> **Phase 2 note:** When we add score-saving, you'll also enable **Firestore Database**
-> (Build → Firestore → Create database → *production mode*) and add a small security
-> rule. We'll cover that when we build the game.
+The pipeline ([`scripts/generate-news.mjs`](scripts/generate-news.mjs)) is tuned for
+free-tier reliability: it batches classification into a single API call and falls
+back from `gemini-2.5-flash` to `gemini-2.5-flash-lite` if the quota is hit.
+
+```
+GitHub Action (daily) ─▶ RSS ─▶ Gemini (classify + summarize) ─▶ commit ─▶ Vercel deploy ─▶ live
+```
 
 ---
 
-## ▶️ Running locally
+## Project structure
 
-Because the site uses ES modules, open it through a local server (not `file://`):
+```
+games4all/
+├── index.html              # landing page
+├── app.js                  # auth + username + landing UI
+├── firebase.js             # shared Firebase init
+├── firestore.rules         # security rules (scores locked to server-only)
+├── api/submit-score.js     # serverless score validator (Admin SDK)
+├── shared/                 # auth guard + score-submit helper
+├── games/                  # the 6 Phaser games
+├── leaderboard/            # global leaderboard page
+├── news/                   # AI news page + articles.json
+├── scripts/generate-news.mjs   # RSS → Gemini → articles.json
+└── .github/workflows/news.yml  # daily cron
+```
 
-**VS Code:** install the **Live Server** extension → right-click `index.html` → *Open with Live Server*.
+---
 
-**Or with Node:**
+## Running locally
+
+The site uses ES modules, so serve it over HTTP (not `file://`).
+
 ```bash
+# Static preview (games, leaderboard, news page):
 npx serve .
 ```
 
-**Or with Python:**
+The serverless function (`/api/submit-score`) and the news script only run on
+Vercel's runtime. To exercise the full stack locally, use the Vercel CLI:
+
 ```bash
-python -m http.server 5500
+npm install
+vercel dev
 ```
-Then visit the URL it prints (e.g. `http://localhost:5500`).
+
+To generate a news article locally (needs a `GEMINI_API_KEY` in a `.env` file):
+
+```bash
+node scripts/generate-news.mjs        # add DRY_RUN=1 to preview without writing
+```
+
+## Deployment
+
+Hosted on **Vercel**, auto-deploying on every push to `main`. Two secrets/vars power the backend:
+
+- `FIREBASE_SERVICE_ACCOUNT` — Vercel environment variable, used by the score-validation function.
+- `GEMINI_API_KEY` — GitHub Actions secret, used by the daily news workflow.
+
+> **A note on the exposed Firebase keys:** the `firebaseConfig` in
+> [`firebase.js`](firebase.js) is **safe to be public** — that's how Firebase web
+> apps work. Access is controlled by Auth settings and Firestore Security Rules,
+> not by hiding the config.
 
 ---
 
-## 🚀 Deploying to Vercel
+## License
 
-1. Push this folder to a GitHub repo.
-2. Go to <https://vercel.com/new> → import the repo.
-3. Framework preset: **Other** (it's a static site — no build step).
-4. Click **Deploy**.
-5. Copy your `*.vercel.app` domain and add it to Firebase **Authorized domains** (step 5 above).
-
-No environment variables or build command needed.
-
----
-
-## Roadmap
-- [x] **Phase 1** — Landing page + Google auth
-- [ ] **Phase 2** — Flappy Bird (Phaser 3) + Firestore high scores
-- [ ] **Phase 3** — Global leaderboards
-- [ ] More games…
+Personal portfolio project. Game art assets from [Kenney](https://kenney.nl/) (CC0).
