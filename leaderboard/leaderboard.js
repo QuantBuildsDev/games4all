@@ -1,6 +1,4 @@
-// ============================================================
-//  Leaderboard — fetch all scores and render per-game tables
-// ============================================================
+// Leaderboard: fetch all scores and render per-game tables.
 
 import { auth, db } from "../firebase.js";
 import { showSignInRequired } from "../shared/auth-guard.js";

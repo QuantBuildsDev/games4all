@@ -1,6 +1,4 @@
-// ============================================================
-//  Games4All — landing page app logic (auth + username + UI)
-// ============================================================
+// Games4All landing page: auth, username, UI.
 
 import {
   signInWithPopup,
@@ -48,7 +46,7 @@ function toast(msg, isError = false) {
   toastEl.textContent = msg;
   toastEl.hidden = false;
   toastEl.classList.toggle("toast-error", isError);
-  void toastEl.offsetWidth; // force reflow
+  void toastEl.offsetWidth; // reflow to restart the transition
   toastEl.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
@@ -112,7 +110,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// Apply a known username to the nav UI
 function applyUsernameToNav(uname) {
   userName.textContent   = uname;
   userNameLg.textContent = uname;
@@ -139,7 +136,7 @@ async function resolveUsername(user) {
     // Fall through to show modal
   }
 
-  // No username found — prompt the user
+  // No username yet, prompt the user
   showUsernameModal(user);
 }
 
@@ -182,7 +179,6 @@ function showUsernameModal(user) {
     }
   };
 
-  // Allow Enter key
   input.onkeydown = (e) => { if (e.key === "Enter") btn.click(); };
 
   btn.onclick = async () => {

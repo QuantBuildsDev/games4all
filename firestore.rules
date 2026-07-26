@@ -7,24 +7,17 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == userId;
     }
 
-    // ------------------------------------------------------------
-    //  Per-game high scores  —  scores/{uid}
-    // ------------------------------------------------------------
-    //  Reads: any signed-in player (needed for the leaderboard).
-    //  Writes: BLOCKED for everyone. Scores are written only by the
-    //  server (/api/submit-score) via the Firebase Admin SDK, which
-    //  bypasses these rules. This makes the "type a score in the
-    //  browser console" cheat impossible — the client can't write here.
+    // Per-game high scores. Reads allowed for any signed-in player (leaderboard).
+    // Writes blocked for everyone: scores are written only by the server
+    // (/api/submit-score) via the Admin SDK, which bypasses these rules. This
+    // makes the "type a score in the browser console" cheat impossible.
     match /scores/{userId} {
       allow read:  if request.auth != null;
       allow write: if false;
     }
 
-    // ------------------------------------------------------------
-    //  User profiles (chosen username)  —  users/{uid}
-    // ------------------------------------------------------------
-    //  Still written client-side (low risk), but validated server-side
-    //  by these rules: only a well-formed username + optional timestamp.
+    // User profiles (chosen username). Written client-side but validated by
+    // these rules: only a well-formed username + optional timestamp.
     match /users/{userId} {
       allow read: if request.auth != null;
 
@@ -40,7 +33,7 @@ service cloud.firestore {
            );
     }
 
-    // Legacy public 'leaderboard' collection removed — nothing reads or
-    // writes it anymore. Anything without an explicit rule is denied by default.
+    // Legacy public 'leaderboard' collection removed; nothing reads or writes
+    // it anymore. Anything without an explicit rule is denied by default.
   }
 }

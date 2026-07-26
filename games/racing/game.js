@@ -1,6 +1,4 @@
-// ============================================================
-//  Highway Rush — top-down racer (Phaser 3 + Kenney art + Firebase)
-// ============================================================
+// Highway Rush: top-down racer (Phaser 3 + Kenney art + Firebase)
 
 import { auth, db } from "../../firebase.js";
 import { showSignInRequired } from "../../shared/auth-guard.js";
@@ -8,7 +6,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { submitScore } from "../../shared/score-sync.js";
 
-// ---------- Metrics ----------
+// metrics
 const W = 480, H = 720;
 const GRASS_W = 70;
 const ROAD_L = GRASS_W;
@@ -35,7 +33,7 @@ const OBSTACLES = [
 
 function laneX(i) { return ROAD_L + ROAD_W * (i + 0.5) / LANES; }
 
-// ---------- DOM ----------
+// dom
 const $ = (id) => document.getElementById(id);
 const scoreVal    = $("scoreVal");
 const bestVal     = $("bestVal");
@@ -44,7 +42,7 @@ const overScreen  = $("overScreen");
 const finalScore  = $("finalScore");
 const saveNote    = $("saveNote");
 
-// ---------- Best (local + cloud) ----------
+// best (local + cloud)
 const LS_KEY = "g4a_racing_best";
 let localBest = parseInt(localStorage.getItem(LS_KEY) || "0", 10);
 let cloudBest = 0;
@@ -53,9 +51,7 @@ const shownBest = () => Math.max(localBest, cloudBest);
 function refreshBest() { bestVal.innerHTML = currentUser ? shownBest() + "<small>m</small>" : "—"; }
 refreshBest();
 
-// ============================================================
-//  Firebase
-// ============================================================
+// firebase
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   updateAuthUI(user);
@@ -92,9 +88,7 @@ async function persistBest(score) {
   return res;
 }
 
-// ============================================================
-//  sfx
-// ============================================================
+// sfx
 let actx;
 function sfx(type) {
   try {
@@ -134,9 +128,7 @@ function sfx(type) {
   } catch (_) {}
 }
 
-// ============================================================
-//  Phaser scene
-// ============================================================
+// phaser scene
 class RacingScene extends Phaser.Scene {
   constructor() { super("racing"); }
 
@@ -178,7 +170,7 @@ class RacingScene extends Phaser.Scene {
     this.trees        = [];
     this.nitroPickups = [];
 
-    // ---- Lane-snap keyboard ----
+    // lane-snap keyboard
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys    = this.input.keyboard.addKeys("W,A,S,D");
     this.input.keyboard.on("keydown-LEFT",  () => this.changeLane(-1));
@@ -186,7 +178,7 @@ class RacingScene extends Phaser.Scene {
     this.input.keyboard.on("keydown-RIGHT", () => this.changeLane(1));
     this.input.keyboard.on("keydown-D",     () => this.changeLane(1));
 
-    // ---- Drag / touch steering ----
+    // drag / touch steering
     this.drag = null;
     this.input.on("pointerdown", (p) => {
       this.drag = { x: p.x, y: p.y, px: this.player.x, py: this.player.y };
@@ -202,30 +194,29 @@ class RacingScene extends Phaser.Scene {
       this.drag = null;
     });
 
-    // ---- HUD: near-miss popup ----
+    // hud: near-miss popup
     this.nearMissText = this.add.text(W / 2, H / 2, "", {
       fontFamily: '"Space Grotesk", sans-serif', fontSize: "26px", fontStyle: "700",
       color: "#ffd34e", stroke: "#111111", strokeThickness: 4,
     }).setOrigin(0.5).setDepth(12).setAlpha(0);
 
-    // ---- HUD: streak badge ----
+    // hud: streak badge
     this.multiBadge = this.add.text(ROAD_R - 8, 10, "", {
       fontFamily: '"Space Grotesk", sans-serif', fontSize: "17px", fontStyle: "700",
       color: "#ff7a45", stroke: "#111111", strokeThickness: 3,
     }).setOrigin(1, 0).setDepth(12).setAlpha(0);
 
-    // ---- HUD: nitro popup ----
+    // hud: nitro popup
     this.nitroText = this.add.text(W / 2, PLAYER_Y - 70, "", {
       fontFamily: '"Space Grotesk", sans-serif', fontSize: "30px", fontStyle: "700",
       color: "#ff9500", stroke: "#111111", strokeThickness: 5,
     }).setOrigin(0.5).setDepth(12).setAlpha(0);
 
-    // ---- HUD: nitro bar (bottom of road) ----
+    // hud: nitro bar (bottom of road)
     this.nitroBarBg = this.add.rectangle(ROAD_L, H - 14, ROAD_W, 10, 0x222222, 0.85)
       .setOrigin(0, 0.5).setDepth(11).setVisible(false);
     this.nitroBar   = this.add.rectangle(ROAD_L, H - 14, ROAD_W, 10, 0xff8c00)
       .setOrigin(0, 0.5).setDepth(12).setVisible(false);
-    // "NITRO" label above the bar
     this.nitroBarLabel = this.add.text(ROAD_L + 6, H - 20, "⚡ NITRO", {
       fontFamily: '"Space Grotesk", sans-serif', fontSize: "13px", fontStyle: "700",
       color: "#ff9500", stroke: "#111111", strokeThickness: 3,
@@ -284,7 +275,7 @@ class RacingScene extends Phaser.Scene {
       fontSize: "20px",
     }).setOrigin(0.5, 0.5).setDepth(4.6);
 
-    // Pulsing scale animation to make it very obvious
+    // pulse so the pickup stands out
     this.tweens.add({
       targets: [img, label],
       scaleX: 1.25, scaleY: 1.25,
@@ -304,20 +295,16 @@ class RacingScene extends Phaser.Scene {
     n.label.destroy();
     this.nitroPickups = this.nitroPickups.filter(p => p !== n);
 
-    // Speed boost
     this.speed         = Math.min(MAX_SPEED, this.speed + NITRO_BOOST);
     this.nitroActive   = true;
     this.nitroDuration = NITRO_DURATION;
 
-    // Screen flash orange
     this.cameras.main.flash(120, 255, 140, 0, false);
 
-    // Nitro popup
     this.tweens.killTweensOf(this.nitroText);
     this.nitroText.setText("⚡ NITRO!").setPosition(W / 2, this.player.y - 70).setAlpha(1).setScale(1.3);
     this.tweens.add({ targets: this.nitroText, y: this.player.y - 140, alpha: 0, scale: 1, duration: 900, ease: "Power2" });
 
-    // Show bar
     this.nitroBarBg.setVisible(true);
     this.nitroBar.setSize(ROAD_W, 10).setVisible(true);
     this.nitroBarLabel.setVisible(true);
@@ -570,9 +557,7 @@ class RacingScene extends Phaser.Scene {
   }
 }
 
-// ============================================================
-//  Score + overlay glue
-// ============================================================
+// score + overlay glue
 let gameScore = 0;
 function updateScore(v, reset = false) {
   gameScore = reset ? 0 : v;
@@ -593,9 +578,7 @@ function showGameOver(score) {
   overScreen.hidden = false;
 }
 
-// ============================================================
-//  Boot
-// ============================================================
+// boot
 const config = {
   type: Phaser.AUTO,
   parent: "game",

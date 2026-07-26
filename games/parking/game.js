@@ -1,7 +1,5 @@
-// ============================================================
-//  Parking Panic — Rush Hour puzzle (Phaser 3 + Kenney art + Firebase)
-//  Score = highest level solved (saved under scores/{uid}.parking)
-// ============================================================
+// Parking Panic: Rush Hour puzzle (Phaser 3 + Kenney art + Firebase)
+// Score = highest level solved (saved under scores/{uid}.parking)
 
 import { auth, db } from "../../firebase.js";
 import { showSignInRequired } from "../../shared/auth-guard.js";
@@ -9,7 +7,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { submitScore } from "../../shared/score-sync.js";
 
-// ---------- Metrics ----------
+// metrics
 const N = 6;                 // 6x6 grid
 const SZ = 480;
 const PAD = 16;
@@ -18,7 +16,7 @@ const SCORE_FIELD = "parking";
 const ASSET = (f) => "/games/parking/assets/" + f;
 const ENEMY_KEYS = ["enemy_blue", "enemy_green", "enemy_black", "enemy_yellow"];
 
-// ---------- Levels ----------
+// levels
 // Each vehicle: { x, y, len, dir:'h'|'v', t:true? (target) }
 // Invariant for solvability: only the target sits on its exit row at cols 0..1;
 // every vertical blocker on the exit row has an empty escape corridor.
@@ -36,13 +34,13 @@ const LEVELS = [
   [ { x:0,y:2,len:2,dir:"h",t:true }, { x:2,y:2,len:2,dir:"v" }, { x:2,y:1,len:3,dir:"h" }, { x:0,y:0,len:3,dir:"h" }, { x:0,y:4,len:2,dir:"v" }, { x:2,y:4,len:2,dir:"h" }, { x:5,y:2,len:2,dir:"v" }, { x:3,y:0,len:2,dir:"h" }, { x:4,y:4,len:2,dir:"v" }, { x:3,y:2,len:2,dir:"v" }, { x:5,y:4,len:2,dir:"v" } ],
 ];
 
-// ---------- DOM ----------
+// dom
 const $ = (id) => document.getElementById(id);
 const levelVal = $("levelVal");
 const movesVal = $("movesVal");
 const bestVal = $("bestVal");
 
-// ---------- Best (local + cloud) — highest level solved ----------
+// best (local + cloud), highest level solved
 const LS_KEY = "g4a_parking_best";
 let localBest = parseInt(localStorage.getItem(LS_KEY) || "0", 10);
 let cloudBest = 0;
@@ -88,7 +86,7 @@ async function persistBest(levelNum) {
   return res;
 }
 
-// ---------- sfx ----------
+// sfx
 let actx;
 function sfx(type) {
   try {
@@ -101,15 +99,11 @@ function sfx(type) {
   } catch (_) {}
 }
 
-// ============================================================
-//  Helpers (grid geometry)
-// ============================================================
+// helpers (grid geometry)
 function centerH(x, y, len) { return { cx: PAD + (x + len / 2) * CELL, cy: PAD + (y + 0.5) * CELL }; }
 function centerV(x, y, len) { return { cx: PAD + (x + 0.5) * CELL, cy: PAD + (y + len / 2) * CELL }; }
 
-// ============================================================
-//  Phaser scene
-// ============================================================
+// phaser scene
 class ParkingScene extends Phaser.Scene {
   constructor() { super("parking"); }
 
@@ -131,7 +125,7 @@ class ParkingScene extends Phaser.Scene {
     this.input.on("pointermove", (p) => this.onMove(p));
     this.input.on("pointerup", () => this.onUp());
     // If the button is released off-canvas, still end the drag (otherwise the
-    // car would keep following the mouse — the "click then click again" feel).
+    // car would keep following the mouse, the "click then click again" feel).
     this.input.on("pointerupoutside", () => this.onUp());
     this.input.on("gameout", () => this.onUp());
 
@@ -265,7 +259,7 @@ class ParkingScene extends Phaser.Scene {
     const r = this.range(idx);
     const v0 = this.vehicles[idx];
     const startPos = v0.dir === "h" ? v0.x : v0.y;
-    // Snapshot the pointer position — the Phaser pointer object is reused/mutated,
+    // Snapshot the pointer position: the Phaser pointer object is reused/mutated,
     // so storing the reference would make the drag delta always read as 0.
     this.sel = { idx, r, start: { x: p.x, y: p.y }, startPos, float: startPos };
     this.vehicles[idx].sprite.setDepth(3);
@@ -328,9 +322,7 @@ class ParkingScene extends Phaser.Scene {
   }
 }
 
-// ============================================================
-//  Overlay glue
-// ============================================================
+// overlay glue
 function showSolved(levelNum, moves, isLast) {
   const note = $("saveNote");
   note.className = "save-note";
@@ -356,9 +348,7 @@ function showAllClear() {
   $("allClearScreen").hidden = false;
 }
 
-// ============================================================
-//  Boot
-// ============================================================
+// boot
 const config = {
   type: Phaser.AUTO,
   parent: "game",

@@ -1,6 +1,4 @@
-// ============================================================
-//  Flappy Bird — Phaser 3 game + Firebase high-score saving
-// ============================================================
+// Flappy Bird (Phaser 3 + Firebase high-score saving)
 
 import { auth, db } from "../../firebase.js";
 import { showSignInRequired } from "../../shared/auth-guard.js";
@@ -11,7 +9,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { submitScore } from "../../shared/score-sync.js";
 
-// ---------- Tunable game constants ----------
+// tunable game constants
 const WIDTH = 400;
 const HEIGHT = 600;
 const GRAVITY = 1400;
@@ -23,7 +21,7 @@ const PIPE_WIDTH = 64;
 const GROUND_HEIGHT = 80;
 const BIRD_X = 110;
 
-// ---------- DOM refs ----------
+// dom
 const $ = (id) => document.getElementById(id);
 const startScreen = $("startScreen");
 const gameOverScreen = $("gameOverScreen");
@@ -35,7 +33,7 @@ const bestScoreEl = $("bestScore");
 const bestStartEl = $("bestStart");
 const saveNote = $("saveNote");
 
-// ---------- Best-score state (local + cloud) ----------
+// best score (local + cloud)
 const LS_KEY = "g4a_flappy_best";
 let localBest = parseInt(localStorage.getItem(LS_KEY) || "0", 10);
 let cloudBest = 0;
@@ -50,9 +48,7 @@ function refreshBestLabels() {
 }
 refreshBestLabels();
 
-// ============================================================
-//  Firebase: auth state + score persistence
-// ============================================================
+// firebase auth + persistence
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   updateAuthUI(user);
@@ -96,9 +92,8 @@ function avatarFallback(name) {
   return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
 }
 
-// Save a new high score to Firestore (only if it beats the cloud best)
+// persist to Firestore only if it beats the cloud best
 async function persistScore(score) {
-  // Always keep local best
   if (score > localBest) {
     localBest = score;
     localStorage.setItem(LS_KEY, String(localBest));
@@ -116,9 +111,7 @@ async function persistScore(score) {
   return res;
 }
 
-// ============================================================
-//  Tiny WebAudio sound effects (no asset files)
-// ============================================================
+// tiny WebAudio sfx (no asset files)
 let actx;
 function sfx(type) {
   try {
@@ -151,12 +144,10 @@ function sfx(type) {
       g.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
       o.start(now); o.stop(now + 0.35);
     }
-  } catch (_) { /* audio not available — ignore */ }
+  } catch (_) { /* audio not available, ignore */ }
 }
 
-// ============================================================
-//  Phaser scene
-// ============================================================
+// phaser scene
 class FlappyScene extends Phaser.Scene {
   constructor() {
     super("flappy");
@@ -170,7 +161,6 @@ class FlappyScene extends Phaser.Scene {
     this.buildWorld();
     this.buildBird();
 
-    // Pipe group
     this.pipes = this.physics.add.group({ allowGravity: false, immovable: true });
     this.pipePairs = [];
 
@@ -195,7 +185,7 @@ class FlappyScene extends Phaser.Scene {
     window.__restartFlappy = () => this.scene.restart();
   }
 
-  // ---- Generated textures (no image files) ----
+  // generated textures (no image files)
   buildTextures() {
     if (this.textures.exists("bird")) return;
 
@@ -284,7 +274,6 @@ class FlappyScene extends Phaser.Scene {
     });
   }
 
-  // ---- State transitions ----
   startPlay() {
     if (this.gameState === "playing") return;
     this.gameState = "playing";
@@ -346,7 +335,7 @@ class FlappyScene extends Phaser.Scene {
     const bottom = this.makePipe(startX, gapBottom + bottomH / 2, PIPE_WIDTH, bottomH, GREEN);
     const bottomCap = this.makePipe(startX, gapBottom + CAP_H / 2, CAP_W, CAP_H, GREEN);
 
-    // Subtle highlight strips for depth (visual only — move with pipes)
+    // Subtle highlight strips for depth (visual only, move with pipes)
     [top, bottom].forEach((p) => {
       const hl = this.add.rectangle(p.x - PIPE_WIDTH / 2 + 8, p.y, 8, p.height, 0x69d36e);
       this.physics.add.existing(hl);
@@ -426,9 +415,7 @@ class FlappyScene extends Phaser.Scene {
   }
 }
 
-// ============================================================
-//  Boot Phaser
-// ============================================================
+// boot phaser
 const config = {
   type: Phaser.AUTO,
   parent: "game",
@@ -442,9 +429,7 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-// ============================================================
-//  DOM glue: start / restart / game-over
-// ============================================================
+// dom glue: start / restart / game-over
 function showGameOver(score) {
   finalScoreEl.textContent = score;
   saveNote.className = "save-note";
@@ -480,8 +465,7 @@ restartBtn.addEventListener("click", () => {
   saveNote.textContent = "";
   bestStartEl.textContent = shownBest();
   if (window.__restartFlappy) window.__restartFlappy();
-  // Scene restarts in "ready" state — show the start prompt so it's clear
-  // the player needs to tap/click/Space to begin the next run.
+  // Scene restarts in "ready" state, so re-show the start prompt for the next run.
   startScreen.hidden = false;
 });
 

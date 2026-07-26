@@ -1,6 +1,4 @@
-// ============================================================
-//  Tetris — Phaser 3 + Firebase high-score saving
-// ============================================================
+// Tetris (Phaser 3 + Firebase high-score saving)
 
 import { auth, db } from "../../firebase.js";
 import { showSignInRequired } from "../../shared/auth-guard.js";
@@ -8,7 +6,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { submitScore } from "../../shared/score-sync.js";
 
-// ---------- Metrics ----------
+// metrics
 const COLS = 10, ROWS = 20;
 const CELL = 30;
 const W = COLS * CELL;          // 300
@@ -16,10 +14,10 @@ const H = ROWS * CELL;          // 600
 const PREVIEW_CELL = 22;        // cell size for next/hold preview canvases
 const SCORE_FIELD = "tetris";
 
-// ---------- Tetrominoes ----------
+// tetrominoes
 // Each piece: colour, 4 rotation states (each is a flat array of [col,row] offsets)
 const PIECES = [
-  // I — cyan
+  // I, cyan
   {
     color: 0x00e5ff, dark: 0x00a8bb,
     rots: [
@@ -29,7 +27,7 @@ const PIECES = [
       [[1,0],[1,1],[1,2],[1,3]],
     ],
   },
-  // O — yellow
+  // O, yellow
   {
     color: 0xffe000, dark: 0xbba400,
     rots: [
@@ -39,7 +37,7 @@ const PIECES = [
       [[1,0],[2,0],[1,1],[2,1]],
     ],
   },
-  // T — purple
+  // T, purple
   {
     color: 0xaa00ff, dark: 0x7700bb,
     rots: [
@@ -49,7 +47,7 @@ const PIECES = [
       [[1,0],[0,1],[1,1],[1,2]],
     ],
   },
-  // S — green
+  // S, green
   {
     color: 0x00e676, dark: 0x00a854,
     rots: [
@@ -59,7 +57,7 @@ const PIECES = [
       [[0,0],[0,1],[1,1],[1,2]],
     ],
   },
-  // Z — red
+  // Z, red
   {
     color: 0xff1744, dark: 0xbb1033,
     rots: [
@@ -69,7 +67,7 @@ const PIECES = [
       [[1,0],[0,1],[1,1],[0,2]],
     ],
   },
-  // J — blue
+  // J, blue
   {
     color: 0x2979ff, dark: 0x1c57bb,
     rots: [
@@ -79,7 +77,7 @@ const PIECES = [
       [[1,0],[1,1],[0,2],[1,2]],
     ],
   },
-  // L — orange
+  // L, orange
   {
     color: 0xff6d00, dark: 0xbb4f00,
     rots: [
@@ -91,12 +89,12 @@ const PIECES = [
   },
 ];
 
-// ---------- Scoring ----------
+// scoring
 const LINE_SCORES = [0, 100, 300, 500, 800]; // 0-4 lines
 const LEVEL_LINES = 10;                        // lines per level
 function gravity(level) { return Math.max(50, 800 - (level - 1) * 70); } // ms per drop
 
-// ---------- DOM ----------
+// dom
 const $ = (id) => document.getElementById(id);
 const scoreEl = $("scoreVal"), bestEl = $("bestVal");
 const levelEl = $("levelVal"), linesEl = $("linesVal");
@@ -104,7 +102,7 @@ const startScreen = $("startScreen"), overScreen = $("overScreen");
 const pauseScreen = $("pauseScreen");
 const finalScoreEl = $("finalScore"), saveNote = $("saveNote");
 
-// ---------- Best (local + cloud) ----------
+// best (local + cloud)
 const LS_KEY = "g4a_tetris_best";
 let localBest = parseInt(localStorage.getItem(LS_KEY) || "0", 10);
 let cloudBest = 0, currentUser = null;
@@ -112,9 +110,7 @@ const shownBest = () => Math.max(localBest, cloudBest);
 function refreshBest() { bestEl.textContent = currentUser ? shownBest() : "—"; }
 refreshBest();
 
-// ============================================================
-//  Firebase
-// ============================================================
+// firebase
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   updateAuthUI(user);
@@ -151,9 +147,7 @@ async function persistBest(score) {
   return res;
 }
 
-// ============================================================
-//  WebAudio sfx
-// ============================================================
+// WebAudio sfx
 let actx;
 function sfx(type) {
   try {
@@ -169,9 +163,7 @@ function sfx(type) {
   } catch (_) {}
 }
 
-// ============================================================
-//  Phaser Scene
-// ============================================================
+// phaser scene
 class TetrisScene extends Phaser.Scene {
   constructor() { super("tetris"); }
 
@@ -247,7 +239,7 @@ class TetrisScene extends Phaser.Scene {
     pauseScreen.hidden = true;
   }
 
-  // ---------- Piece management ----------
+  // piece management
   refillBag() {
     const bag = [0,1,2,3,4,5,6];
     for (let i = bag.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [bag[i], bag[j]] = [bag[j], bag[i]]; }
@@ -264,7 +256,7 @@ class TetrisScene extends Phaser.Scene {
   }
   peekNext() { return this.bag.length ? this.bag[0] : this.nextBag[0]; }
 
-  // ---------- Collision ----------
+  // collision
   cells(piece) {
     return PIECES[piece.id].rots[piece.rot].map(([dc, dr]) => [piece.x + dc, piece.y + dr]);
   }
@@ -274,7 +266,7 @@ class TetrisScene extends Phaser.Scene {
     );
   }
 
-  // ---------- Controls ----------
+  // controls
   handleKey(action) {
     if (this.state !== "playing") return;
     const p = this.current;
@@ -326,7 +318,7 @@ class TetrisScene extends Phaser.Scene {
     if (this.gravityTimer) { this.gravityTimer.remove(); this.startGravity(); }
   }
 
-  // ---------- Gravity ----------
+  // gravity
   startGravity() {
     if (this.gravityTimer) this.gravityTimer.remove();
     this.gravityTimer = this.time.addEvent({
@@ -340,10 +332,10 @@ class TetrisScene extends Phaser.Scene {
     });
   }
 
-  // ---------- Lock ----------
+  // lock
   lock() {
     const cells = this.cells(this.current);
-    // game over — piece locked above visible area
+    // game over: piece locked above visible area
     if (cells.every(([, r]) => r < 0)) { this.gameOver(); return; }
     for (const [c, r] of cells) {
       if (r >= 0) this.board[r][c] = this.current.id;
@@ -394,7 +386,7 @@ class TetrisScene extends Phaser.Scene {
     showGameOver(this.score);
   }
 
-  // ---------- DAS update (update loop) ----------
+  // DAS update (update loop)
   update(_t, delta) {
     if (this.state !== "playing") return;
     const das = this.das;
@@ -412,7 +404,7 @@ class TetrisScene extends Phaser.Scene {
     }
   }
 
-  // ---------- Rendering ----------
+  // rendering
   ghostY() {
     let y = this.current.y;
     while (this.valid({ ...this.current, y: y + 1 })) y++;
@@ -461,9 +453,7 @@ class TetrisScene extends Phaser.Scene {
   }
 }
 
-// ============================================================
-//  Cell drawing helpers
-// ============================================================
+// cell drawing helpers
 function drawCell(g, c, r, color, dark) {
   const x = c * CELL, y = r * CELL, s = CELL;
   const pad = 1.5;
@@ -482,9 +472,7 @@ function drawGhost(g, c, r, color) {
   g.strokeRoundedRect(x + pad, y + pad, s - pad * 2, s - pad * 2, 4);
 }
 
-// ============================================================
-//  Preview canvases (Next / Hold)
-// ============================================================
+// preview canvases (next / hold)
 function makePreviewCanvas(parentId, cols, rows) {
   const canvas = document.createElement("canvas");
   canvas.width = cols * PREVIEW_CELL;
@@ -518,9 +506,7 @@ function drawPreview(ctx, id, piece) {
 }
 function clearPreview(ctx) { ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); }
 
-// ============================================================
-//  HUD + overlay glue
-// ============================================================
+// hud + overlay glue
 function updateHUD(scene) {
   scoreEl.textContent = scene.score;
   levelEl.textContent = scene.level;
@@ -540,9 +526,7 @@ function showGameOver(score) {
   overScreen.hidden = false;
 }
 
-// ============================================================
-//  Boot Phaser
-// ============================================================
+// boot phaser
 const config = {
   type: Phaser.AUTO,
   parent: "game",

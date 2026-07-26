@@ -1,17 +1,6 @@
-// ============================================================
-//  score-sync — submit a high score to the server-side validator
-// ============================================================
-//
-//  Games used to write scores straight to Firestore. They now POST to
-//  /api/submit-score instead, which verifies the user and validates the
-//  value on the server (where it can't be tampered with). Firestore rules
-//  block direct client writes to /scores, so this is the only way to save.
-//
-//  Usage from a game:
-//      import { submitScore } from "../../shared/score-sync.js";
-//      const res = await submitScore("tetris", score);
-//      // res.status === "saved" | "nobeat" | "signin" | "error"
-// ------------------------------------------------------------
+// Submit a high score to the server-side validator (/api/submit-score).
+// Firestore rules block direct client writes to /scores, so this is the
+// only save path. Returns { status: "saved" | "nobeat" | "signin" | "error" }.
 
 import { auth } from "../firebase.js";
 

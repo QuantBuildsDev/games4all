@@ -1,28 +1,11 @@
-// ============================================================
-//  /api/submit-score  —  server-side score validator (Vercel)
-// ============================================================
-//
-//  The browser can NO LONGER write scores directly to Firestore
-//  (firestore.rules denies all client writes to /scores). Instead the
-//  game POSTs its score here. This function runs on Vercel's server,
-//  where the user can't see or tamper with it, and:
-//
-//    1. Verifies the player's Firebase ID token (proves who they are).
-//    2. Validates the score (known game, whole number, within a sane cap).
-//    3. Writes via the Firebase Admin SDK inside a transaction that
-//       never lowers an existing best.
-//
-//  The display name + avatar are taken from the SERVER's view of the
-//  user (their saved username / verified token), so they can't be spoofed.
-//
-//  Requires one Vercel environment variable:
-//    FIREBASE_SERVICE_ACCOUNT = the full service-account JSON (one line)
-//  See DEPLOY-SCORES.md for how to generate and add it.
-// ------------------------------------------------------------
+// Server-side score validator (Vercel). Verifies the caller's Firebase ID
+// token, validates the score, and writes via the Admin SDK. firestore.rules
+// blocks direct client writes to /scores, so this is the only write path.
+// Requires the FIREBASE_SERVICE_ACCOUNT env var (service-account JSON, one line).
 
 import admin from "firebase-admin";
 
-// Initialise the Admin SDK once and reuse it across warm invocations.
+// Init once and reuse across warm invocations.
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(
@@ -32,8 +15,8 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-// Per-game sane caps — keep these in sync with firestore.rules.
-// Values are set well above any believable human result.
+// Per-game sane caps, set well above any believable human result.
+// Keep these in sync with firestore.rules.
 const GAME_CAPS = {
   flappybird: 100000,
   game2048:   10000000,
@@ -42,7 +25,6 @@ const GAME_CAPS = {
   parking:    10,        // the game only has 10 levels
   tetris:     10000000,
 };
-// Minimum accepted value per game (defaults to 0).
 const GAME_MIN = {
   parking: 1,
 };
@@ -52,7 +34,6 @@ export default async function handler(req, res) {
     return res.status(405).json({ status: "error", message: "Method not allowed" });
   }
 
-  // --- 1) Verify the caller's Firebase ID token ---
   const header = req.headers.authorization || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
   if (!token) {
@@ -67,7 +48,6 @@ export default async function handler(req, res) {
   }
   const uid = decoded.uid;
 
-  // --- 2) Validate the payload ---
   const body = typeof req.body === "string" ? safeParse(req.body) : (req.body || {});
   const { game, score } = body;
 
@@ -82,7 +62,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ status: "error", message: "Score out of range" });
   }
 
-  // --- 3) Resolve a trustworthy display name (server-side, not client-supplied) ---
+  // Resolve display name server-side so it can't be spoofed by the client.
   let displayName = decoded.name || "Player";
   try {
     const userSnap = await db.collection("users").doc(uid).get();
@@ -90,10 +70,10 @@ export default async function handler(req, res) {
       displayName = userSnap.data().username;
     }
   } catch {
-    // Non-fatal — fall back to the token's name.
+    // Non-fatal, fall back to the token's name.
   }
 
-  // --- 4) Monotonic write: only ever raise the stored best ---
+  // Monotonic write: only ever raise the stored best.
   const ref = db.collection("scores").doc(uid);
   try {
     const result = await db.runTransaction(async (tx) => {

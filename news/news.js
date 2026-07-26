@@ -1,6 +1,4 @@
-// ============================================================
-//  News — fetch news/articles.json and render the feed
-// ============================================================
+// Fetch news/articles.json and render the feed.
 
 const listEl = document.getElementById("newsList");
 

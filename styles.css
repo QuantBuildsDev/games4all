@@ -1,6 +1,4 @@
-/* ============================================================
-   Games4All — landing page styles
-   ============================================================ */
+/* Games4All landing page styles */
 
 :root {
   --bg:        #07080f;
@@ -629,9 +627,7 @@ main { display: block; }
   html { scroll-behavior: auto; }
 }
 
-/* ============================================================
-   Username modal
-   ============================================================ */
+/* Username modal */
 .modal-backdrop {
   position: fixed;
   inset: 0;

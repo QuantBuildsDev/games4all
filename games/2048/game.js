@@ -1,6 +1,4 @@
-// ============================================================
-//  2048 — Phaser 3 + Firebase high-score saving
-// ============================================================
+// 2048 (Phaser 3 + Firebase high-score saving)
 
 import { auth, db } from "../../firebase.js";
 import { showSignInRequired } from "../../shared/auth-guard.js";
@@ -8,7 +6,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { submitScore } from "../../shared/score-sync.js";
 
-// ---------- Board metrics ----------
+// board metrics
 const SIZE = 4;
 const W = 480;
 const PAD = 14;
@@ -17,7 +15,7 @@ const RADIUS = 10;
 const MOVE_MS = 110;
 const SCORE_FIELD = "game2048"; // Firestore field under scores/{uid}
 
-// ---------- DOM ----------
+// dom
 const $ = (id) => document.getElementById(id);
 const scoreVal = $("scoreVal");
 const bestVal = $("bestVal");
@@ -26,7 +24,7 @@ const overScreen = $("overScreen");
 const finalScore = $("finalScore");
 const saveNote = $("saveNote");
 
-// ---------- Best score (local + cloud) ----------
+// best score (local + cloud)
 const LS_KEY = "g4a_2048_best";
 let localBest = parseInt(localStorage.getItem(LS_KEY) || "0", 10);
 let cloudBest = 0;
@@ -36,9 +34,7 @@ const shownBest = () => Math.max(localBest, cloudBest);
 function refreshBest() { bestVal.textContent = currentUser ? shownBest() : "—"; }
 refreshBest();
 
-// ============================================================
-//  Firebase auth + persistence
-// ============================================================
+// firebase auth + persistence
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   updateAuthUI(user);
@@ -90,9 +86,7 @@ async function persistBest(score) {
   return res;
 }
 
-// ============================================================
-//  Tile colors (classic 2048 palette)
-// ============================================================
+// tile colors (classic 2048 palette)
 function tileColors(v) {
   const map = {
     2:    [0xeee4da, "#776e65"],
@@ -115,9 +109,7 @@ function fontSizeFor(v) {
   return 30;
 }
 
-// ============================================================
-//  Tiny WebAudio sfx
-// ============================================================
+// tiny WebAudio sfx
 let actx;
 function sfx(type) {
   try {
@@ -144,9 +136,7 @@ function sfx(type) {
   } catch (_) {}
 }
 
-// ============================================================
-//  Position helpers
-// ============================================================
+// position helpers
 function cellCenter(r, c) {
   return {
     x: PAD + c * (CELL + PAD) + CELL / 2,
@@ -161,9 +151,7 @@ function posFor(dir, i, k) {
   return { r: SIZE - 1 - k, c: i }; // down
 }
 
-// ============================================================
-//  Phaser scene
-// ============================================================
+// phaser scene
 class Game2048 extends Phaser.Scene {
   constructor() { super("g2048"); }
 
@@ -177,7 +165,7 @@ class Game2048 extends Phaser.Scene {
 
     this.tileLayer = this.add.container(0, 0);
 
-    // Input — keyboard
+    // keyboard input
     const map = {
       "keydown-LEFT": "left", "keydown-A": "left",
       "keydown-RIGHT": "right", "keydown-D": "right",
@@ -188,7 +176,7 @@ class Game2048 extends Phaser.Scene {
       this.input.keyboard.on(key, () => this.move(dir));
     });
 
-    // Input — swipe
+    // swipe input
     this.input.on("pointerdown", (p) => { this.swipeStart = { x: p.x, y: p.y }; });
     this.input.on("pointerup", (p) => {
       if (!this.swipeStart) return;
@@ -219,7 +207,6 @@ class Game2048 extends Phaser.Scene {
     }
   }
 
-  // ---- Tile object management ----
   makeTile(r, c, value) {
     const { x, y } = cellCenter(r, c);
     const gfx = this.add.graphics();
@@ -234,7 +221,6 @@ class Game2048 extends Phaser.Scene {
     this.tileLayer.add(container);
     this.cells[r][c] = tile;
 
-    // Pop-in
     container.setScale(0);
     this.tweens.add({ targets: container, scale: 1, duration: 130, ease: "Back.easeOut" });
     return tile;
@@ -268,7 +254,6 @@ class Game2048 extends Phaser.Scene {
   }
 
   newGame() {
-    // Clear all tiles
     this.tileLayer.removeAll(true);
     this.cells = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
     this.score = 0;
@@ -282,7 +267,6 @@ class Game2048 extends Phaser.Scene {
     this.spawnRandom();
   }
 
-  // ---- Core move ----
   move(dir) {
     if (this.animating) return;
     if (!overScreen.hidden) return; // ignore moves on game over
@@ -326,7 +310,6 @@ class Game2048 extends Phaser.Scene {
     this.animating = true;
     this.cells = newCells;
 
-    // Animate slides
     for (const s of slides) {
       const { x, y } = cellCenter(s.r, s.c);
       s.tile.row = s.r;
@@ -341,7 +324,6 @@ class Game2048 extends Phaser.Scene {
         m.remove.container.destroy();
         m.keep.value = m.value;
         this.drawTile(m.keep);
-        // merge pop
         this.tweens.add({ targets: m.keep.container, scale: 1.18, duration: 70, yoyo: true, ease: "Quad.easeOut" });
         if (m.value === 2048 && !this.won) { this.won = true; justWon = true; }
       }
@@ -373,9 +355,7 @@ class Game2048 extends Phaser.Scene {
   }
 }
 
-// ============================================================
-//  Score + overlay glue (module scope)
-// ============================================================
+// score + overlay glue (module scope)
 let gameScore = 0;
 function updateScore(delta, reset = false) {
   gameScore = reset ? 0 : gameScore + delta;
@@ -403,9 +383,7 @@ function showGameOver(score) {
   overScreen.hidden = false;
 }
 
-// ============================================================
-//  Boot Phaser
-// ============================================================
+// boot phaser
 const config = {
   type: Phaser.AUTO,
   parent: "game",
@@ -417,7 +395,7 @@ const config = {
 };
 const game = new Phaser.Game(config);
 
-// ---------- DOM buttons ----------
+// dom buttons
 $("newGameBtn").addEventListener("click", () => window.__newGame2048 && window.__newGame2048());
 $("overNewBtn").addEventListener("click", () => window.__newGame2048 && window.__newGame2048());
 $("winNewBtn").addEventListener("click", () => window.__newGame2048 && window.__newGame2048());

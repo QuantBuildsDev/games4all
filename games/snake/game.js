@@ -1,6 +1,4 @@
-// ============================================================
-//  Snake — Phaser 3 + Firebase high-score saving
-// ============================================================
+// Snake (Phaser 3 + Firebase high-score saving)
 
 import { auth, db } from "../../firebase.js";
 import { showSignInRequired } from "../../shared/auth-guard.js";
@@ -8,7 +6,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { submitScore } from "../../shared/score-sync.js";
 
-// ---------- Board metrics ----------
+// board metrics
 const W = 480;
 const GRID = 20;
 const CELL = W / GRID; // 24
@@ -18,7 +16,7 @@ const MIN_INTERVAL = 70;
 const SPEEDUP = 4;          // ms faster per apple
 const SCORE_FIELD = "snake";
 
-// ---------- DOM ----------
+// dom
 const $ = (id) => document.getElementById(id);
 const scoreVal = $("scoreVal");
 const bestVal = $("bestVal");
@@ -27,7 +25,7 @@ const overScreen = $("overScreen");
 const finalScore = $("finalScore");
 const saveNote = $("saveNote");
 
-// ---------- Best score (local + cloud) ----------
+// best score (local + cloud)
 const LS_KEY = "g4a_snake_best";
 let localBest = parseInt(localStorage.getItem(LS_KEY) || "0", 10);
 let cloudBest = 0;
@@ -37,9 +35,7 @@ const shownBest = () => Math.max(localBest, cloudBest);
 function refreshBest() { bestVal.textContent = currentUser ? shownBest() : "—"; }
 refreshBest();
 
-// ============================================================
-//  Firebase auth + persistence
-// ============================================================
+// firebase auth + persistence
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   updateAuthUI(user);
@@ -93,9 +89,7 @@ async function persistBest(score) {
   return res;
 }
 
-// ============================================================
-//  Tiny WebAudio sfx
-// ============================================================
+// tiny WebAudio sfx
 let actx;
 function sfx(type) {
   try {
@@ -122,7 +116,7 @@ function sfx(type) {
   } catch (_) {}
 }
 
-// ---------- Color helper ----------
+// color helper
 function lerpColor(a, b, t) {
   const ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255;
   const br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
@@ -132,9 +126,7 @@ function lerpColor(a, b, t) {
   return (r << 16) | (g << 8) | bl;
 }
 
-// ============================================================
-//  Phaser scene
-// ============================================================
+// phaser scene
 class SnakeScene extends Phaser.Scene {
   constructor() { super("snake"); }
 
@@ -325,9 +317,7 @@ class SnakeScene extends Phaser.Scene {
   }
 }
 
-// ============================================================
-//  Score + overlay glue (module scope)
-// ============================================================
+// score + overlay glue (module scope)
 let gameScore = 0;
 function updateScore(delta, reset = false) {
   gameScore = reset ? 0 : gameScore + delta;
@@ -349,9 +339,7 @@ function showGameOver(score) {
   overScreen.hidden = false;
 }
 
-// ============================================================
-//  Boot Phaser
-// ============================================================
+// boot phaser
 const config = {
   type: Phaser.AUTO,
   parent: "game",
@@ -363,7 +351,7 @@ const config = {
 };
 const game = new Phaser.Game(config);
 
-// ---------- DOM buttons ----------
+// dom buttons
 $("startBtn").addEventListener("click", () => window.__startSnake && window.__startSnake());
 $("restartBtn").addEventListener("click", () => window.__startSnake && window.__startSnake());
 

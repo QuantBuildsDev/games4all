@@ -1,40 +1,26 @@
-// ============================================================
-//  generate-news.mjs — fetch a real VIDEO-GAME story, write an
-//  original take with Gemini, and prepend it to news/articles.json
-// ============================================================
-//
-//  Runs in GitHub Actions once a day (see .github/workflows/news.yml).
-//  Needs env var GEMINI_API_KEY (a GitHub secret; locally read from .env).
-//
-//  To stay well under the Gemini free-tier rate limits, a run makes only
-//  TWO API calls:
-//    1) ONE call classifies a shortlist of recent headlines and picks the
-//       first that is genuinely about video games (games, consoles/hardware,
-//       or the games industry) — skipping movies/TV/actors/anime/music, even
-//       game adaptations. Uses the cheap, high-limit flash-lite model.
-//    2) ONE call writes the ~100-word take on the chosen article's full text.
-//
-//  Set DRY_RUN=1 to preview the chosen article without writing the file.
-// ------------------------------------------------------------
+// Fetch a real video-game story, write an original Gemini take, and prepend it
+// to news/articles.json. Runs daily in GitHub Actions (.github/workflows/news.yml).
+// Needs GEMINI_API_KEY (GitHub secret; locally read from .env).
+// A run makes only two API calls to stay under the free-tier limits: one to
+// classify the headline shortlist, one to write the take. Set DRY_RUN=1 to
+// preview without writing.
 
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import Parser from "rss-parser";
 import { extract } from "@extractus/article-extractor";
 
-// ---------- Config ----------
 const FEEDS = [
   { name: "IGN",      url: "https://feeds.feedburner.com/ign/all" },
   { name: "Polygon",  url: "https://www.polygon.com/rss/index.xml" },
   { name: "PC Gamer", url: "https://www.pcgamer.com/rss/" },
 ];
-const CLASSIFY_MODEL = "gemini-2.5-flash-lite"; // cheap + high free limits for the GAME/SKIP pick
+const CLASSIFY_MODEL = "gemini-2.5-flash-lite"; // cheap + high free limits for the classify pick
 const WRITE_MODEL    = "gemini-2.5-flash";      // preferred: nicer prose for the take
 const FALLBACK_MODEL = "gemini-2.5-flash-lite"; // used only when WRITE_MODEL is out of quota (429)
 const MAX_CANDIDATES = 15;   // recent items considered in the single classification call
-const MAX_ARTICLES   = 30;   // cap the file size
+const MAX_ARTICLES   = 30;
 const ARTICLES_PATH  = new URL("../news/articles.json", import.meta.url);
 
-// ---------- Helpers ----------
 const strip = (html) => (html || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 const wc = (s) => (s ? s.trim().split(/\s+/).filter(Boolean).length : 0);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -94,8 +80,7 @@ async function gemini(key, prompt, { model = WRITE_MODEL, maxOutputTokens = 600,
   throw lastErr;
 }
 
-// ONE call: from the shortlist, return the index of the first real video-game
-// story, or -1 if none qualify.
+// Return the shortlist index of the first real video-game story, or -1 if none qualify.
 async function pickGameIndex(key, shortlist) {
   const list = shortlist.map((c, i) => {
     const t = (c.item.title || "").trim();
@@ -149,15 +134,14 @@ ${clipped}`;
     return await gemini(key, prompt, { ...opts, model: WRITE_MODEL, backoffs: [4000] });
   } catch (e) {
     if (!/\b429\b|quota/i.test(e.message)) throw e; // real error, not a quota issue
-    console.log(`${WRITE_MODEL} out of quota — falling back to ${FALLBACK_MODEL}`);
+    console.log(`${WRITE_MODEL} out of quota, falling back to ${FALLBACK_MODEL}`);
     return await gemini(key, prompt, { ...opts, model: FALLBACK_MODEL });
   }
 }
 
-// ---------- Main ----------
 const key = loadKey();
 if (!key || key.includes("paste-your")) {
-  console.error("❌ No GEMINI_API_KEY found (env or .env).");
+  console.error("No GEMINI_API_KEY found (env or .env).");
   process.exit(1);
 }
 
@@ -193,7 +177,6 @@ if (!shortlist.length) {
 }
 console.log(`Considering ${shortlist.length} recent headlines…`);
 
-// ONE classification call picks the first genuine video-game story.
 const idx = await pickGameIndex(key, shortlist);
 if (idx < 0) {
   console.log("No fresh video-game story among the candidates today. Nothing to post.");
@@ -213,7 +196,7 @@ try {
   image = art?.image || "";
   console.log(`Full text: ${wc(body)} words`);
 } catch (e) {
-  console.log(`Extraction failed (${e.message}) — using RSS summary`);
+  console.log(`Extraction failed (${e.message}), using RSS summary`);
 }
 if (wc(body) < 40) {
   body = strip(item.contentSnippet || item.content || item.summary || title);
@@ -234,11 +217,11 @@ const entry = {
 };
 
 if (process.env.DRY_RUN === "1") {
-  console.log("DRY_RUN — would post this entry (articles.json NOT modified):");
+  console.log("DRY_RUN: would post this entry (articles.json not modified):");
   console.log(JSON.stringify(entry, null, 2));
   process.exit(0);
 }
 
 const updated = [entry, ...articles].slice(0, MAX_ARTICLES);
 writeFileSync(ARTICLES_PATH, JSON.stringify(updated, null, 2) + "\n");
-console.log(`✅ Wrote news/articles.json (${updated.length} articles total).`);
+console.log(`Wrote news/articles.json (${updated.length} articles total).`);
